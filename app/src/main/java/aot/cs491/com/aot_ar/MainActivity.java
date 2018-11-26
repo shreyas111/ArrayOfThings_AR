@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity
     List <CompletableFuture<ViewRenderable>> exampleLayouts;
     List <ViewRenderable> exampleLayoutRenderables;
     List <LocationMarker> locationMarkers;
+    List <LocationMarkerCustom> locationMarkersCustom;
 
     @Override
     public void onValueChange(NumberPicker numberPicker, int i, int i1) {
@@ -126,6 +127,7 @@ public class MainActivity extends AppCompatActivity
         exampleLayouts = new ArrayList<>();
         exampleLayoutRenderables = new ArrayList<ViewRenderable>();
         locationMarkers = new ArrayList<LocationMarker>();
+        locationMarkersCustom = new ArrayList<LocationMarkerCustom>();
 
         DisposablesManager.add(
                 AOTService.fetchObservationsFromNearbyNodes(longitude, latitude, distance, parsedDate)
@@ -141,14 +143,14 @@ public class MainActivity extends AppCompatActivity
 //                                    {
 //                                        exampleLayouts = new ArrayList<>();
 //                                    }
-                                    count1 =count1 +1;
 
-                                    if(count1>2) {
-                                        exampleLayouts.add(
-                                                ViewRenderable.builder()
-                                                        .setView(this, R.layout.example_layout)
-                                                        .build());
-                                    }
+
+                                    //if(count1<=4) {
+                                    exampleLayouts.add(
+                                            ViewRenderable.builder()
+                                                    .setView(this,R.layout.inner_layout)
+                                                    .build());
+                                    //}
 //                                    exampleLayout =
 //                                            ViewRenderable.builder()
 //                                                    .setView(this, R.layout.example_layout)
@@ -224,7 +226,7 @@ public class MainActivity extends AppCompatActivity
 //                DialogFragment timePicker= new TimePickerFragment();
 //                timePicker.show(getSupportFragmentManager(),"TimePicker");
 
-                 showNumberPicker(view);
+                showNumberPicker(view);
                 //DialogFragment numberPicker = new NumberPickerFragment();
                 //numberPicker.show(getSupportFragmentManager(),"number picker");
             }
@@ -290,8 +292,10 @@ public class MainActivity extends AppCompatActivity
                                 //}
                                 // Now lets create our location markers.
                                 // First, a layout
-                                for (int i=0; i< 2; i++)
+                                for (int i=0; i<nodes.size(); i++)
                                 {
+//                                    locationMarkersCustom.add(createLocationMarkerCustom(nodes.get(i).getLocation().lon(),
+//                                            nodes.get(i).getLocation().lat(), exampleLayoutRenderables.get(i),nodes.get(i)));
                                     locationMarkers.add(createLocationMarker(nodes.get(i).getLocation().lon(),
                                             nodes.get(i).getLocation().lat(), exampleLayoutRenderables.get(i)));
                                 }
@@ -316,9 +320,9 @@ public class MainActivity extends AppCompatActivity
 //                                        41.869678,
 //                                        getExampleView1(exampleLayoutRenderables.get(1))
 //                                );
-                                for(int i=0; i<2; i++)
+                                for(int i=0; i<nodes.size(); i++)
                                 {
-                                    setRenderEvent(locationMarkers.get(i), exampleLayoutRenderables.get(i));
+                                    setRenderEvent(locationMarkers.get(i), exampleLayoutRenderables.get(i), nodes.get(i));
                                 }
 
                                 // An example "onRender" event, called every frame
@@ -363,8 +367,13 @@ public class MainActivity extends AppCompatActivity
 //                                    }
 //                                });
                                 // Adding the marker
-                                locationScene.mLocationMarkers.add(locationMarkers.get(0));
-                                locationScene.mLocationMarkers.add(locationMarkers.get(1));
+                                for(int i=0; i< nodes.size();i++) {
+                                    locationScene.mLocationMarkers.add(locationMarkers.get(i));
+
+                                }
+                                //locationScene.mLocationMarkers.add(locationMarkers.get(1));
+                                //locationScene.mLocationMarkers.add(locationMarkers.get(2));
+                                //locationScene.mLocationMarkers.add(locationMarkers.get(3));
                                 //locationScene.mLocationMarkers.add(locationMarkers.get(0));
                                 //locationScene.mLocationMarkers.add(locationMarkers.get(1));
 
@@ -648,10 +657,12 @@ public class MainActivity extends AppCompatActivity
 
     private void handleCompleteableFutures()
     {
-        //CompletableFuture.allOf(exampleLayouts.toArray(new CompletableFuture[exampleLayouts.size()]))
-        CompletableFuture.allOf(
-                exampleLayouts.get(0),
-                exampleLayouts.get(1))
+        CompletableFuture.allOf(exampleLayouts.toArray(new CompletableFuture[exampleLayouts.size()]))
+                //CompletableFuture.allOf(
+                //        exampleLayouts.get(0),
+                //        exampleLayouts.get(1),
+                //        exampleLayouts.get(2),
+                //        exampleLayouts.get(3))
                 .handle(
                         (notUsed, throwable) -> {
                             // When you build a Renderable, Sceneform loads its resources in the background while
@@ -670,7 +681,7 @@ public class MainActivity extends AppCompatActivity
 //                                for (CompletableFuture<ViewRenderable> a : exampleLayouts) {
 //                                    exampleLayoutRenderables.add(a.get());
 //                                }
-                                for(int i=0; i< 2; i++) {
+                                for(int i=0; i< nodes.size(); i++) {
                                     exampleLayoutRenderables.add(exampleLayouts.get(i).get());
                                 }
                                 //exampleLayoutRenderable = exampleLayout.get();
@@ -699,15 +710,42 @@ public class MainActivity extends AppCompatActivity
         );
     }
 
-    public void setRenderEvent(LocationMarker lm, ViewRenderable vr)
+    public LocationMarkerCustom createLocationMarkerCustom(double longitude, double latitude, ViewRenderable vr, AOTNode aotNode )
+    {
+        return new LocationMarkerCustom(
+                longitude,
+                latitude,
+                getExampleView1(vr),aotNode
+        );
+    }
+
+    public void setRenderEvent(LocationMarker lm, ViewRenderable vr, AOTNode aotN)
     {
         lm.setRenderEvent(new LocationNodeRender() {
             @Override
             public void render(LocationNode node) {
                 //View eView = exampleLayoutRenderables.get(0).getView();
                 View eView = vr.getView();
-                TextView distanceTextView = eView.findViewById(R.id.textView2);
+                TextView distanceTextView = eView.findViewById(R.id.textView_dist1);
+                TextView nameView = eView.findViewById(R.id.textView_loc1);
                 distanceTextView.setText(node.getDistance() + "M");
+                nameView.setText(aotN.getAddress());
+
+            }
+        });
+    }
+
+    public void setRenderEventCustom(LocationMarkerCustom lm, ViewRenderable vr)
+    {
+        lm.setRenderEvent(new LocationNodeRender() {
+            @Override
+            public void render(LocationNode node) {
+                //View eView = exampleLayoutRenderables.get(0).getView();
+                View eView = vr.getView();
+                TextView distanceTextView = eView.findViewById(R.id.textView_dist1);
+                TextView nameView = eView.findViewById(R.id.textView_loc1);
+                distanceTextView.setText(node.getDistance() + "M");
+                nameView.setText(lm.getAotNode().getAddress());
             }
         });
     }
