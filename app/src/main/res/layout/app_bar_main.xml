@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <android.support.design.widget.AppBarLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.v7.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -24,7 +24,7 @@
             <!--android:paddingTop="@dimen/nav_header_vertical_spacing"-->
             <!--android:text="@string/nav_header_title"-->
             <!--android:textAppearance="@style/TextAppearance.AppCompat.Body1" />-->
-            <android.support.design.widget.FloatingActionButton
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab"
                 android:backgroundTint="@color/colorPrimary"
                 android:layout_width="wrap_content"
@@ -32,7 +32,7 @@
                 android:layout_gravity="center_horizontal"
                 app:srcCompat="@drawable/calendar1" />
 
-            <android.support.design.widget.FloatingActionButton
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab1"
                 android:backgroundTint="@color/colorPrimary"
                 android:layout_width="wrap_content"
@@ -48,8 +48,8 @@
             <!--app:backgroundTint="@null"-->
 
 
-        </android.support.v7.widget.Toolbar>
-    </android.support.design.widget.AppBarLayout>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <include layout="@layout/content_main" />
 
@@ -61,4 +61,4 @@
     <!--android:layout_margin="@dimen/fab_margin"-->
     <!--app:srcCompat="@android:drawable/ic_dialog_email" />-->
 
-</android.support.design.widget.CoordinatorLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

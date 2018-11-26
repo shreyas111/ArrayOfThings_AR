@@ -3,29 +3,20 @@ package aot.cs491.com.aot_ar;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.DatePicker;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Plane;
 import com.google.ar.core.Session;
@@ -40,11 +31,16 @@ import com.google.ar.sceneform.rendering.ViewRenderable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import aot.cs491.com.aot_ar.aothttpapi.AOTNode;
 import aot.cs491.com.aot_ar.aothttpapi.AOTObservation;
 import aot.cs491.com.aot_ar.aothttpapi.AOTService;
@@ -59,7 +55,7 @@ import uk.co.appoly.arcorelocation.rendering.LocationNodeRender;
 import uk.co.appoly.arcorelocation.utils.ARLocationPermissionHelper;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, TimePickerDialog.OnTimeSetListener, NumberPicker.OnValueChangeListener
+        implements NavigationView.OnNavigationItemSelectedListener, TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener
 {
 
     int count1 =0;
@@ -67,8 +63,7 @@ public class MainActivity extends AppCompatActivity
     static final int DIALOG_ID = 0;
     FloatingActionButton fab;
     FloatingActionButton fab1;
-    private DatePickerDialog.OnDateSetListener mDateSetListener;
-    //private TimePickerDialog.OnTimeSetListener mTimeSetListener;
+
     //TextView mDate;
     //TextView mTime;
 
@@ -93,17 +88,6 @@ public class MainActivity extends AppCompatActivity
     List <LocationMarker> locationMarkers;
     List <LocationMarkerCustom> locationMarkersCustom;
 
-    @Override
-    public void onValueChange(NumberPicker numberPicker, int i, int i1) {
-        Toast.makeText(this,
-                "selected number " + numberPicker.getValue(), Toast.LENGTH_SHORT).show();
-    }
-
-    public void showNumberPicker(View view){
-        NumberPickerFragment newFragment = new NumberPickerFragment();
-        newFragment.setValueChangeListener(this);
-        newFragment.show(getSupportFragmentManager(), "time picker");
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -191,46 +175,36 @@ public class MainActivity extends AppCompatActivity
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab1 = (FloatingActionButton) findViewById(R.id.fab1);
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Select a Date", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+        fab.setOnClickListener(view -> {
+            Snackbar snackbar = Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Select a Date", Snackbar.LENGTH_LONG);
+            snackbar.getView().setBackgroundColor(0xbf323232);
+            snackbar.show();
 
-                Calendar cal=Calendar.getInstance();
-                int year1= cal.get(Calendar.YEAR);
-                int month1 = cal.get(Calendar.MONTH);
-                int day1=cal.get(Calendar.DAY_OF_MONTH);
-                DatePickerDialog dialog= new DatePickerDialog(MainActivity.this, android.R.style.Theme_Black,
-                        mDateSetListener, year1, month1,day1 );
-                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                dialog.show();
-
-            }
+            Calendar now = Calendar.getInstance();
+            DatePickerDialog dialog = new DatePickerDialog(
+                    MainActivity.this,
+                    MainActivity.this,
+                    now.get(Calendar.YEAR), // Initial year selection
+                    now.get(Calendar.MONTH), // Initial month selection
+                    now.get(Calendar.DAY_OF_MONTH) // Inital day selection
+            );
+            dialog.show();
         });
-        mDateSetListener = new DatePickerDialog.OnDateSetListener(){
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int day)
-            {
-                month=month+1;
-                String date= month +"/" + day +"/"+ year;
-                //mDate.setText(date);
-            }
 
-        };
+        fab1.setOnClickListener(view -> {
+            Snackbar snackbar = Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Select a Time", Snackbar.LENGTH_LONG);
+            snackbar.getView().setBackgroundColor(0xbf323232);
+            snackbar.show();
 
-        fab1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-//                DialogFragment timePicker= new TimePickerFragment();
-//                timePicker.show(getSupportFragmentManager(),"TimePicker");
-
-                showNumberPicker(view);
-                //DialogFragment numberPicker = new NumberPickerFragment();
-                //numberPicker.show(getSupportFragmentManager(),"number picker");
-            }
-
+            Calendar now = Calendar.getInstance();
+            TimePickerDialog dialog = new TimePickerDialog(
+                    MainActivity.this,
+                    MainActivity.this,
+                    now.get(Calendar.HOUR_OF_DAY), // Initial year selection
+                    now.get(Calendar.MINUTE), // Initial month selection
+                    false
+                    );
+            dialog.show();
         });
 
 
@@ -413,9 +387,19 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onTimeSet(TimePicker view, int hourOfDay, int Minute)
-    {
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        String time = "You picked the following time: "+hourOfDay+"h "+minute +"m";
+        Snackbar snackbar = Snackbar.make(MainActivity.this.findViewById(android.R.id.content), time, Snackbar.LENGTH_LONG);
+        snackbar.getView().setBackgroundColor(0xbf323232);
+        snackbar.show();
+    }
 
+    @Override
+    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        String date = "You picked the following date: "+dayOfMonth+"/"+(monthOfYear+1)+"/"+year;
+        Snackbar snackbar = Snackbar.make(MainActivity.this.findViewById(android.R.id.content), date, Snackbar.LENGTH_LONG);
+        snackbar.getView().setBackgroundColor(0xbf323232);
+        snackbar.show();
     }
 
     @Override
