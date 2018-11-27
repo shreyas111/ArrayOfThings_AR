@@ -43,6 +43,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import aot.cs491.com.aot_ar.aothttpapi.AOTNode;
 import aot.cs491.com.aot_ar.aothttpapi.AOTObservation;
+import aot.cs491.com.aot_ar.aothttpapi.AOTSensorType;
 import aot.cs491.com.aot_ar.aothttpapi.AOTService;
 import aot.cs491.com.aot_ar.utils.DisposablesManager;
 import aot.cs491.com.aot_ar.utils.Utils;
@@ -96,14 +97,16 @@ public class MainActivity extends AppCompatActivity
 
         helloWorldLabel = findViewById(R.id.textTime);
 
-        Date parsedDate = Utils.stripTimeFromLocalDate(new Date());
+        Calendar calendar = Calendar.getInstance();
+        Date apiStartDate = Utils.stripTimeFromLocalDate(calendar.getTime());
+        Date apiEndDate = Utils.stringToLocalDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH));
         double longitude = -87.662111;
         double latitude = 41.871629;
         int distance = 2000;
 
-        String sensorType = "Temperature";
-        Date filterStartDate = parsedDate;
-        Date filterEndDate = null;
+        AOTSensorType sensorType = AOTSensorType.TEMPERATURE;
+        Date filterStartDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 1, calendar.getTime());
+        Date filterEndDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY), calendar.getTime());
 
 
 
@@ -114,7 +117,7 @@ public class MainActivity extends AppCompatActivity
         locationMarkersCustom = new ArrayList<LocationMarkerCustom>();
 
         DisposablesManager.add(
-                AOTService.fetchObservationsFromNearbyNodes(longitude, latitude, distance, parsedDate)
+                AOTService.fetchObservationsFromNearbyNodes(longitude, latitude, distance, apiStartDate, apiEndDate)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnSubscribe(disposable -> Log.i(TAG, "Fetching nearby nodes..."))
@@ -150,8 +153,13 @@ public class MainActivity extends AppCompatActivity
 
                                         if (!node.getObservations().isEmpty()) {
                                             List<AOTObservation> temperatureData = AOTService.filterObservations(node.getObservations(), sensorType, filterStartDate, filterEndDate);
-                                            AOTObservation aggregatedObservation = AOTService.aggregateObservations(temperatureData, "avg");
-                                            helloWorldLabel.append("\n" + sensorType + ": " + aggregatedObservation.getValue());
+                                            if(temperatureData != null && !temperatureData.isEmpty()) {
+                                                AOTObservation aggregatedObservation = AOTService.aggregateObservations(temperatureData, "avg");
+                                                helloWorldLabel.append("\n" + sensorType + ": " + aggregatedObservation.getValue());
+                                            }
+                                            else {
+                                                helloWorldLabel.append("\n" + sensorType + ": No data available");
+                                            }
                                         }
 
 

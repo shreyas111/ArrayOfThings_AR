@@ -7,6 +7,8 @@ import com.github.filosganga.geogson.model.Point;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import androidx.annotation.Nullable;
 import aot.cs491.com.aot_ar.utils.DateDeserializer;
 import aot.cs491.com.aot_ar.utils.DisposablesManager;
 import aot.cs491.com.aot_ar.utils.Utils;
@@ -35,7 +37,7 @@ public class AOTService {
     private static final String TAG = AOTService.class.getSimpleName();
 
     private static final String BASE_URL = "https://api.arrayofthings.org/api/";
-    private static HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY);
+    private static HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.HEADERS);
     private static OkHttpClient httpClient = new OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
             .build();
@@ -87,11 +89,11 @@ public class AOTService {
                 .map(response -> response.getData());
     }
 
-    public static Observable<AOTNode> fetchObservationsFromNearbyNodes(double longitude, double latitude, int distanceInMeters, Date startDate) {
-        return fetchObservationsFromNearbyNodes(longitude, latitude, distanceInMeters, startDate, 200, 500);
+    public static Observable<AOTNode> fetchObservationsFromNearbyNodes(double longitude, double latitude, int distanceInMeters, Date startDate, @Nullable Date endDate) {
+        return fetchObservationsFromNearbyNodes(longitude, latitude, distanceInMeters, startDate, endDate, 200, 500);
     }
 
-    public static Observable<AOTNode> fetchObservationsFromNearbyNodes(double longitude, double latitude, int distanceInMeters, Date startDate, int pages, int pageSize) {
+    public static Observable<AOTNode> fetchObservationsFromNearbyNodes(double longitude, double latitude, int distanceInMeters, Date startDate, @Nullable Date endDate, int pages, int pageSize) {
         return fetchNodes(longitude, latitude, distanceInMeters)
                 .toObservable()
                 .flatMapIterable(nodes -> nodes)
@@ -119,7 +121,7 @@ public class AOTService {
                                                     node.getSensors().add(new AOTSensor(anObservation.sensorPath));
                                                 }
                                             })
-                                            .takeWhile(observations -> observations.size() > 0)
+                                            .takeWhile(observations -> !observations.isEmpty() && (endDate == null || observations.get(observations.size() - 1).timestamp.compareTo(endDate) <= 0))
                                             .doOnComplete(() -> {
                                                 emitter.onNext(node);
                                                 emitter.onComplete();
@@ -134,11 +136,11 @@ public class AOTService {
                 );
     }
 
-    public static List<AOTObservation> filterObservations(List<AOTObservation> observations, String sensorType, Date startTime, Date endTime) {
+    public static List<AOTObservation> filterObservations(List<AOTObservation> observations, AOTSensorType sensorType, Date startTime, Date endTime) {
         ArrayList<AOTObservation> filteredObservations = new ArrayList<>();
 
         for (AOTObservation anObservation : observations) {
-            if (anObservation.sensorPath.toLowerCase().contains(sensorType.toLowerCase()) && anObservation.timestamp.compareTo(startTime) >= 0 && (endTime == null || anObservation.timestamp.compareTo(endTime) <= 0)) {
+            if (anObservation.sensorPath.toLowerCase().contains(sensorType.toString().toLowerCase()) && anObservation.timestamp.compareTo(startTime) >= 0 && (endTime == null || anObservation.timestamp.compareTo(endTime) <= 0)) {
                 filteredObservations.add(anObservation);
             }
         }

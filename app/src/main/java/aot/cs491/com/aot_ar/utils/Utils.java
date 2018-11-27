@@ -96,9 +96,21 @@ public class Utils {
     }
 
     public static Date stripTimeFromDate(Date date, TimeZone timeZone) {
+        return setHoursForDate(0, date, timeZone);
+    }
+
+    public static Date setHoursForLocalDate(int hour, Date date) {
+        return setHoursForDate(hour, date, TimeZone.getDefault());
+    }
+
+    public static Date setHoursForServerDate(int hour, Date date) {
+        return setHoursForDate(hour, date, TimeZone.getTimeZone(AOTService.TIME_ZONE));
+    }
+
+    public static Date setHoursForDate(int hour, Date date, TimeZone timeZone) {
         Calendar calendar = Calendar.getInstance(timeZone);
         calendar.setTime(date);
-        calendar.set(Calendar.HOUR, 0);
+        calendar.set(Calendar.HOUR, hour);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
 
