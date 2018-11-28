@@ -8,9 +8,9 @@ public enum AOTSensorType {
     PRESSURE("metsense.bmp180.pressure"),
 
     // Cloud cover
-    LIGHT_INTENSITY("intensity"),
-    INFRA_RED_LIGHT("infrared"),
-    ULTRA_VIOLET_LIGHT("ultra-violet"),
+    LIGHT_INTENSITY("chemsense.si1145.visible_light_intensity"),
+    INFRA_RED_LIGHT("chemsense.si1145.ir_intensity"),
+    ULTRA_VIOLET_LIGHT("chemsense.si1145.uv_intensity"),
 
     // Air Quality
     CARBON_MONOXIDE("chemsense.co.concentration"),
@@ -27,5 +27,40 @@ public enum AOTSensorType {
     @Override
     public String toString() {
         return sensorPath;
+    }
+
+    public static AOTSensorType fromSensorPath(String sensorPath) throws IllegalArgumentException {
+        for(AOTSensorType sensorType : AOTSensorType.values()) {
+            if(sensorType.sensorPath.equalsIgnoreCase(sensorPath)) {
+                return sensorType;
+            }
+        }
+        throw new IllegalArgumentException("Unrecognized sensor path: " +sensorPath);
+    }
+
+    public String getUnit(boolean imperial) {
+        switch (this) {
+
+            case TEMPERATURE:
+                return imperial ? "°F" : "°C";
+
+            case HUMIDITY:
+                return "%";
+
+            case PRESSURE:
+                return imperial ? "hPa" : "inHg";
+
+            case LIGHT_INTENSITY:
+            case INFRA_RED_LIGHT:
+            case ULTRA_VIOLET_LIGHT:
+                return "μW/cm²";
+
+            case CARBON_MONOXIDE:
+            case SULPHUR_DIOXIDE:
+            case NITROGEN_DIOXIDE:
+                return "ppm";
+        }
+
+        return "";
     }
 }

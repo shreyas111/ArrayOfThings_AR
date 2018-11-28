@@ -155,10 +155,10 @@ public class MainActivity extends AppCompatActivity
                                             List<AOTObservation> temperatureData = AOTService.filterObservations(node.getObservations(), sensorType, filterStartDate, filterEndDate);
                                             if(temperatureData != null && !temperatureData.isEmpty()) {
                                                 AOTObservation aggregatedObservation = AOTService.aggregateObservations(temperatureData, "avg");
-                                                helloWorldLabel.append("\n" + sensorType + ": " + aggregatedObservation.getValue());
+                                                helloWorldLabel.append("\n" + sensorType.name() + ": " + aggregatedObservation.getValue() +" " +aggregatedObservation.getUnits());
                                             }
                                             else {
-                                                helloWorldLabel.append("\n" + sensorType + ": No data available");
+                                                helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
                                             }
                                         }
 

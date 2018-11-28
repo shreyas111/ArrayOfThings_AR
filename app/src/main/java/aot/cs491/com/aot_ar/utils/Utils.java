@@ -20,6 +20,8 @@ public class Utils {
     private Utils() {
     }
 
+    // ======== DATE MANIPULATION =============
+
     public static String buildDateString(int year, int month, int day) {
         return buildDateString(year, month, day, 0, 0, 0);
     }
@@ -117,6 +119,8 @@ public class Utils {
         return calendar.getTime();
     }
 
+    // ======== AGGREGATION =============
+
     public static <T> Float sumItems(Iterable<T> items, Function<T, Float> key) {
         Float sum = Float.NaN;
 
@@ -158,6 +162,18 @@ public class Utils {
         }
         return max;
     }
+
+    // ======== UNIT CONVERSION =============
+
+    public static Float celsiusToFahrenheit(float celsiusValue) {
+        return celsiusValue * 1.8f + 32;
+    }
+
+    public static Float hectoPascalToInchesOfMercury(Float hPaValue) {
+        return hPaValue * 0.02953f;
+    }
+
+    // ======== OTHERS =============
 
     public <T> CompletableFuture<List<T>> allOf(List<CompletableFuture<T>> futuresList) {
         CompletableFuture<Void> allFuturesResult =

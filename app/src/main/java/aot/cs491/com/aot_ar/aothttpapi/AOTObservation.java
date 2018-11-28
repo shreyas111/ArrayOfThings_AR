@@ -2,11 +2,15 @@ package aot.cs491.com.aot_ar.aothttpapi;
 
 import java.util.Date;
 
+import aot.cs491.com.aot_ar.utils.Utils;
+
 public class AOTObservation {
     String nodeVsn;
     String sensorPath;
     Date timestamp;
     Float value;
+    
+    private AOTSensorType sensorType;
 
     public String getNodeVsn() {
         return nodeVsn;
@@ -33,10 +37,44 @@ public class AOTObservation {
     }
 
     public Float getValue() {
-        return value;
+        return getValue(false);
+    }
+
+    public Float getValue(boolean useImperialUnits) {
+        switch (getSensorType()) {
+            case TEMPERATURE:
+                return useImperialUnits ? Utils.celsiusToFahrenheit(value) : value;
+
+            case PRESSURE:
+                return useImperialUnits ? Utils.hectoPascalToInchesOfMercury(value) : value;
+
+            default:
+                return value;
+        }
     }
 
     public void setValue(Float value) {
         this.value = value;
+    }
+
+    public String getUnits() {
+        return getUnits(false);
+    }
+
+    public String getUnits(boolean useImperialUnits) {
+        return getSensorType() == null ? "" : getSensorType().getUnit(useImperialUnits);
+    }
+
+    public AOTSensorType getSensorType() {
+        String sensorPath = getSensorPath();
+        
+        if(sensorPath == null) {
+            sensorType = null;
+        }
+        else if(sensorType == null || !sensorType.toString().equals(sensorPath)) {
+            sensorType = AOTSensorType.fromSensorPath(sensorPath);
+        }
+        
+        return sensorType;
     }
 }
