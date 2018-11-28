@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreferenceCompat
+        app:key="useImperialUnits"
+        app:title="Use imperial units"
+        app:summary="Show temperature and pressure in imperial units"
+        app:defaultValue="false"/>
+
+    <SeekBarPreference
+        app:key="distanceThreshold"
+        app:title="Nearby nodes maximum distance"
+        app:summary="How far away nodes to display (in Kilometers)"
+        app:min="100"
+        android:max="9999"
+
+        app:defaultValue="2000" />
+
+</androidx.preference.PreferenceScreen>

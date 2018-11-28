@@ -3,6 +3,7 @@ package aot.cs491.com.aot_ar;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -41,6 +42,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.preference.PreferenceManager;
 import aot.cs491.com.aot_ar.aothttpapi.AOTNode;
 import aot.cs491.com.aot_ar.aothttpapi.AOTObservation;
 import aot.cs491.com.aot_ar.aothttpapi.AOTSensorType;
@@ -102,11 +104,12 @@ public class MainActivity extends AppCompatActivity
         Date apiEndDate = Utils.stringToLocalDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH));
         double longitude = -87.662111;
         double latitude = 41.871629;
-        int distance = 2000;
+        int distance = PreferenceManager.getDefaultSharedPreferences(this).getInt("distanceThreshold", 2000);
+        boolean useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useImperialUnits", false);
 
         AOTSensorType sensorType = AOTSensorType.TEMPERATURE;
-        Date filterStartDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 1, calendar.getTime());
-        Date filterEndDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY), calendar.getTime());
+        Date filterStartDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 4, calendar.getTime());
+        Date filterEndDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY)-3, calendar.getTime());
 
 
 
@@ -155,7 +158,7 @@ public class MainActivity extends AppCompatActivity
                                             List<AOTObservation> temperatureData = AOTService.filterObservations(node.getObservations(), sensorType, filterStartDate, filterEndDate);
                                             if(temperatureData != null && !temperatureData.isEmpty()) {
                                                 AOTObservation aggregatedObservation = AOTService.aggregateObservations(temperatureData, "avg");
-                                                helloWorldLabel.append("\n" + sensorType.name() + ": " + aggregatedObservation.getValue() +" " +aggregatedObservation.getUnits());
+                                                helloWorldLabel.append("\n" + sensorType.name() + ": " + aggregatedObservation.getValue(useImperialUnits) +" " +aggregatedObservation.getUnits(useImperialUnits));
                                             }
                                             else {
                                                 helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
@@ -436,6 +439,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
             return true;
         }
 
