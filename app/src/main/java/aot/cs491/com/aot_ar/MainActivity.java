@@ -49,6 +49,8 @@ import aot.cs491.com.aot_ar.aothttpapi.AOTSensorType;
 import aot.cs491.com.aot_ar.aothttpapi.AOTService;
 import aot.cs491.com.aot_ar.utils.DisposablesManager;
 import aot.cs491.com.aot_ar.utils.Utils;
+import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import uk.co.appoly.arcorelocation.LocationMarker;
@@ -108,8 +110,8 @@ public class MainActivity extends AppCompatActivity
         boolean useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useImperialUnits", false);
 
         AOTSensorType sensorType = AOTSensorType.TEMPERATURE;
-        Date filterStartDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 4, calendar.getTime());
-        Date filterEndDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY)-3, calendar.getTime());
+        Date filterStartDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 7, calendar.getTime());
+        Date filterEndDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 5, calendar.getTime());
 
 
 
@@ -127,7 +129,7 @@ public class MainActivity extends AppCompatActivity
                         .subscribe(node -> {
                                     Log.i(TAG, "node emitted: " + node.toString());
                                     nodes.add(node);
-                                    helloWorldLabel.setText("\nNode: " + node.toString());
+//                                    helloWorldLabel.setText("\nNode: " + node.toString());
 
 //                                    if (exampleLayouts== null)
 //                                    {
@@ -153,22 +155,38 @@ public class MainActivity extends AppCompatActivity
                                     if (node.getObservations() != null) {
                                         Log.i(TAG, "node has: " + node.getObservations().size() + " observations from " + node.getSensors().size() + " sensors");
 
-
                                         if (!node.getObservations().isEmpty()) {
-                                            List<AOTObservation> temperatureData = AOTService.filterObservations(node.getObservations(), sensorType, filterStartDate, filterEndDate);
-                                            if(temperatureData != null && !temperatureData.isEmpty()) {
-                                                AOTObservation aggregatedObservation = AOTService.aggregateObservations(temperatureData, "avg");
-                                                helloWorldLabel.append("\n" + sensorType.name() + ": " + aggregatedObservation.getValue(useImperialUnits) +" " +aggregatedObservation.getUnits(useImperialUnits));
-                                            }
-                                            else {
-                                                helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
-                                            }
+                                            DisposablesManager.add(
+                                                    AOTService.filterObservations(node.getObservations(), sensorType, filterStartDate, filterEndDate)
+                                                    .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "avg"))
+                                                    .subscribe(aotObservation -> {
+                                                            helloWorldLabel.setText("\nNode: " + node.toString());
+                                                            if(aotObservation.getSensorPath() != null) {
+                                                                helloWorldLabel.append("\n" + sensorType.name() + ": " + aotObservation.getValue(useImperialUnits) +" " +aotObservation.getUnits(useImperialUnits));
+                                                            }
+                                                            else {
+                                                                helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
+                                                            }
+                                                            helloWorldLabel.append("\n");
+                                                        },
+                                                        throwable -> Log.e(TAG, "Error while filtering/aggregating observations:", throwable)
+                                                    )
+                                            );
+//                                            List<AOTObservation> temperatureData = AOTService.filterObservations(node.getObservations(), sensorType, filterStartDate, filterEndDate);
+//                                            if(temperatureData != null && !temperatureData.isEmpty()) {
+//                                                AOTObservation aggregatedObservation = AOTService.aggregateObservations(temperatureData, "avg");
+//                                                helloWorldLabel.append("\n" + sensorType.name() + ": " + aggregatedObservation.getValue(useImperialUnits) +" " +aggregatedObservation.getUnits(useImperialUnits));
+//                                            }
+//                                            else {
+//                                                helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
+//                                            }
                                         }
-
-
-
                                     }
-
+                                    else {
+                                        helloWorldLabel.setText("\nNode: " + node.toString());
+                                        helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
+                                        helloWorldLabel.append("\n");
+                                    }
                                     helloWorldLabel.append("\n");
                                 },
                                 throwable -> Log.e(TAG, "Error while fetching nearby nodes:", throwable),

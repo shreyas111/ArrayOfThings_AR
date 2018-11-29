@@ -136,20 +136,74 @@ public class AOTService {
                 );
     }
 
-    public static List<AOTObservation> filterObservations(List<AOTObservation> observations, AOTSensorType sensorType, Date startTime, Date endTime) {
-        ArrayList<AOTObservation> filteredObservations = new ArrayList<>();
+    public static Single<List<AOTObservation>> filterObservations(List<AOTObservation> observations, AOTSensorType sensorType, Date startTime, Date endTime) {
+        return  Observable.fromIterable(observations)
+                .filter(anObservation -> anObservation.sensorPath.toLowerCase().contains(sensorType.toString().toLowerCase()) && anObservation.timestamp.compareTo(startTime) >= 0 && (endTime == null || anObservation.timestamp.compareTo(endTime) <= 0))
+                .toList()
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread());
 
-        for (AOTObservation anObservation : observations) {
-            if (anObservation.sensorPath.toLowerCase().contains(sensorType.toString().toLowerCase()) && anObservation.timestamp.compareTo(startTime) >= 0 && (endTime == null || anObservation.timestamp.compareTo(endTime) <= 0)) {
-                filteredObservations.add(anObservation);
+        /*return Single.create(emitter -> {
+            ArrayList<AOTObservation> filteredObservations = new ArrayList<>();
+
+            for (AOTObservation anObservation : observations) {
+                if (anObservation.sensorPath.toLowerCase().contains(sensorType.toString().toLowerCase()) && anObservation.timestamp.compareTo(startTime) >= 0 && (endTime == null || anObservation.timestamp.compareTo(endTime) <= 0)) {
+                    filteredObservations.add(anObservation);
+                }
             }
-        }
+            emitter.onSuccess(filteredObservations);
+        })
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread());*/
 
-        return filteredObservations;
+//        return filteredObservations;
     }
 
-    public static AOTObservation aggregateObservations(List<AOTObservation> observations, String aggregateFunction) {
-        if (observations.isEmpty())
+    public static Single<AOTObservation> aggregateObservations(List<AOTObservation> observations, String aggregateFunction) {
+        return Single.<AOTObservation>create(emitter -> {
+            if (observations.isEmpty()) {
+                // RxJava doesn't allow emitting null, so send blank object instead
+                emitter.onSuccess(new AOTObservation());
+                return;
+            }
+
+            AOTObservation aggregatedObservation = new AOTObservation();
+
+            aggregatedObservation.setNodeVsn(observations.get(0).getNodeVsn());
+            aggregatedObservation.setSensorPath((observations.get(0).getSensorPath()));
+            aggregatedObservation.setTimestamp(observations.get(0).getTimestamp());
+
+            Float aggregatedValue = Float.NaN;
+
+            switch (aggregateFunction.toLowerCase()) {
+                case "min":
+                    aggregatedValue = Utils.minOfItems(observations, AOTObservation::getValue);
+                    break;
+
+                case "max":
+                    aggregatedValue = Utils.maxOfItems(observations, AOTObservation::getValue);
+                    break;
+
+                case "sum":
+                    aggregatedValue = Utils.sumItems(observations, AOTObservation::getValue);
+                    break;
+
+                case "avg":
+                case "mean":
+                    Float sum = Utils.sumItems(observations, AOTObservation::getValue);
+                    if (!sum.isNaN()) {
+                        aggregatedValue = sum / observations.size();
+                    }
+                    break;
+            }
+
+            aggregatedObservation.setValue(aggregatedValue);
+            emitter.onSuccess(aggregatedObservation);
+        })
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread());
+
+        /*if (observations.isEmpty())
             return null;
 
         AOTObservation aggregatedObservation = new AOTObservation();
@@ -183,7 +237,7 @@ public class AOTService {
         }
 
         aggregatedObservation.setValue(aggregatedValue);
-        return aggregatedObservation;
+        return aggregatedObservation;*/
     }
 }
 
