@@ -1,9 +1,13 @@
 package aot.cs491.com.aot_ar;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import android.location.Location;
+
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -15,6 +19,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
@@ -64,6 +70,19 @@ public class MainActivity extends AppCompatActivity
 {
 
     int count1 =0;
+    private FusedLocationProviderClient mFusedLocationClient;
+    Location loc;
+
+
+    double longitude;
+    double latitude;
+    int distance;
+    Date apiStartDate;
+    Date apiEndDate;
+    Date filterStartDate;
+    Date filterEndDate;
+    AOTSensorType sensorType;
+    boolean useImperialUnits;
 
     static final int DIALOG_ID = 0;
     FloatingActionButton fab;
@@ -93,34 +112,8 @@ public class MainActivity extends AppCompatActivity
     List <LocationMarker> locationMarkers;
     List <LocationMarkerCustom> locationMarkersCustom;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        arSceneView = findViewById(R.id.ar_scene_view);
-
-        helloWorldLabel = findViewById(R.id.textTime);
-
-        Calendar calendar = Calendar.getInstance();
-        Date apiStartDate = Utils.stripTimeFromLocalDate(calendar.getTime());
-        Date apiEndDate = Utils.stringToLocalDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH));
-        double longitude = -87.662111;
-        double latitude = 41.871629;
-        int distance = PreferenceManager.getDefaultSharedPreferences(this).getInt("distanceThreshold", 2000);
-        boolean useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useImperialUnits", false);
-
-        AOTSensorType sensorType = AOTSensorType.TEMPERATURE;
-        Date filterStartDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 7, calendar.getTime());
-        Date filterEndDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 5, calendar.getTime());
-
-
-
-        nodes = new ArrayList<>();
-        exampleLayouts = new ArrayList<>();
-        exampleLayoutRenderables = new ArrayList<ViewRenderable>();
-        locationMarkers = new ArrayList<LocationMarker>();
-        locationMarkersCustom = new ArrayList<LocationMarkerCustom>();
-
+    public void initializeAndCallAPI()
+    {
         DisposablesManager.add(
                 AOTService.fetchObservationsFromNearbyNodes(longitude, latitude, distance, apiStartDate, apiEndDate)
                         .subscribeOn(Schedulers.io())
@@ -129,28 +122,11 @@ public class MainActivity extends AppCompatActivity
                         .subscribe(node -> {
                                     Log.i(TAG, "node emitted: " + node.toString());
                                     nodes.add(node);
-//                                    helloWorldLabel.setText("\nNode: " + node.toString());
 
-//                                    if (exampleLayouts== null)
-//                                    {
-//                                        exampleLayouts = new ArrayList<>();
-//                                    }
-
-
-                                    //if(count1<=4) {
                                     exampleLayouts.add(
                                             ViewRenderable.builder()
                                                     .setView(this,R.layout.inner_layout)
                                                     .build());
-                                    //}
-//                                    exampleLayout =
-//                                            ViewRenderable.builder()
-//                                                    .setView(this, R.layout.example_layout)
-//                                                    .build();
-//                                    exampleLayout1 =
-//                                            ViewRenderable.builder()
-//                                                    .setView(this, R.layout.example_layout)
-//                                                    .build();
 
                                     if (node.getObservations() != null) {
                                         Log.i(TAG, "node has: " + node.getObservations().size() + " observations from " + node.getSensors().size() + " sensors");
@@ -158,28 +134,20 @@ public class MainActivity extends AppCompatActivity
                                         if (!node.getObservations().isEmpty()) {
                                             DisposablesManager.add(
                                                     AOTService.filterObservations(node.getObservations(), sensorType, filterStartDate, filterEndDate)
-                                                    .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "avg"))
-                                                    .subscribe(aotObservation -> {
-                                                            helloWorldLabel.setText("\nNode: " + node.toString());
-                                                            if(aotObservation.getSensorPath() != null) {
-                                                                helloWorldLabel.append("\n" + sensorType.name() + ": " + aotObservation.getValue(useImperialUnits) +" " +aotObservation.getUnits(useImperialUnits));
-                                                            }
-                                                            else {
-                                                                helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
-                                                            }
-                                                            helloWorldLabel.append("\n");
-                                                        },
-                                                        throwable -> Log.e(TAG, "Error while filtering/aggregating observations:", throwable)
-                                                    )
+                                                            .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "avg"))
+                                                            .subscribe(aotObservation -> {
+                                                                        helloWorldLabel.setText("\nNode: " + node.toString());
+                                                                        if(aotObservation.getSensorPath() != null) {
+                                                                            helloWorldLabel.append("\n" + sensorType.name() + ": " + aotObservation.getValue(useImperialUnits) +" " +aotObservation.getUnits(useImperialUnits));
+                                                                        }
+                                                                        else {
+                                                                            helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
+                                                                        }
+                                                                        helloWorldLabel.append("\n");
+                                                                    },
+                                                                    throwable -> Log.e(TAG, "Error while filtering/aggregating observations:", throwable)
+                                                            )
                                             );
-//                                            List<AOTObservation> temperatureData = AOTService.filterObservations(node.getObservations(), sensorType, filterStartDate, filterEndDate);
-//                                            if(temperatureData != null && !temperatureData.isEmpty()) {
-//                                                AOTObservation aggregatedObservation = AOTService.aggregateObservations(temperatureData, "avg");
-//                                                helloWorldLabel.append("\n" + sensorType.name() + ": " + aggregatedObservation.getValue(useImperialUnits) +" " +aggregatedObservation.getUnits(useImperialUnits));
-//                                            }
-//                                            else {
-//                                                helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
-//                                            }
                                         }
                                     }
                                     else {
@@ -196,6 +164,75 @@ public class MainActivity extends AppCompatActivity
                                 }
                         )
         );
+    }
+
+    public void distanceRefreshed(int dist)
+    {
+
+        nodes = new ArrayList<>();
+        exampleLayouts = new ArrayList<>();
+        exampleLayoutRenderables = new ArrayList<ViewRenderable>();
+        locationMarkers = new ArrayList<LocationMarker>();
+        locationMarkersCustom = new ArrayList<LocationMarkerCustom>();
+        locationScene=null;
+        this.distance=dist;
+
+        try {
+            mFusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            // Got last known location. In some rare situations this can be null.
+                            if (location != null) {
+                                // Logic to handle location object
+                                latitude=location.getLatitude();
+                                longitude=location.getLongitude();
+                            }
+                            else
+                            {
+                                longitude = -87.662111;
+                                latitude = 41.871629;
+                            }
+                            initializeAndCallAPI();
+                        }
+                    });
+        }
+        catch(SecurityException se)
+        {
+            Toast.makeText(
+                    this, "Location permission is needed to run this application", Toast.LENGTH_LONG)
+                    .show();
+            finish();
+        }
+    }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        arSceneView = findViewById(R.id.ar_scene_view);
+
+        helloWorldLabel = findViewById(R.id.textTime);
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        Calendar calendar = Calendar.getInstance();
+        apiStartDate = Utils.stripTimeFromLocalDate(calendar.getTime());
+        apiEndDate = Utils.stringToLocalDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH));
+        distance = PreferenceManager.getDefaultSharedPreferences(this).getInt("distanceThreshold", 2000);
+        useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useImperialUnits", false);
+
+        sensorType = AOTSensorType.TEMPERATURE;
+        filterStartDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 7, calendar.getTime());
+        filterEndDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 5, calendar.getTime());
+        distanceRefreshed(distance);
+
+
+
+
+//        nodes = new ArrayList<>();
+//        exampleLayouts = new ArrayList<>();
+//        exampleLayoutRenderables = new ArrayList<ViewRenderable>();
+//        locationMarkers = new ArrayList<LocationMarker>();
+//        locationMarkersCustom = new ArrayList<LocationMarkerCustom>();
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
