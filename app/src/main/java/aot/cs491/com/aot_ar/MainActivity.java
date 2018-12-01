@@ -1,9 +1,13 @@
 package aot.cs491.com.aot_ar;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import android.location.Location;
+
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -15,6 +19,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
@@ -64,6 +70,19 @@ public class MainActivity extends AppCompatActivity
 {
 
     int count1 =0;
+    private FusedLocationProviderClient mFusedLocationClient;
+    Location loc;
+
+
+    double longitude;
+    double latitude;
+    int distance;
+    Date apiStartDate;
+    Date apiEndDate;
+    Date filterStartDate;
+    Date filterEndDate;
+    AOTSensorType sensorType;
+    boolean useImperialUnits;
 
     static final int DIALOG_ID = 0;
     FloatingActionButton fab;
@@ -93,36 +112,8 @@ public class MainActivity extends AppCompatActivity
     List <LocationMarker> locationMarkers;
     List <LocationMarkerCustom> locationMarkersCustom;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.AppTheme_NoActionBar);
-
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        arSceneView = findViewById(R.id.ar_scene_view);
-
-        helloWorldLabel = findViewById(R.id.textTime);
-
-        Calendar calendar = Calendar.getInstance();
-        Date apiStartDate = Utils.stripTimeFromLocalDate(calendar.getTime());
-        Date apiEndDate = Utils.stringToLocalDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH));
-        double longitude = -87.662111;
-        double latitude = 41.871629;
-        int distance = PreferenceManager.getDefaultSharedPreferences(this).getInt("distanceThreshold", 2000);
-        boolean useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useImperialUnits", false);
-
-        AOTSensorType sensorType = AOTSensorType.TEMPERATURE;
-        Date filterStartDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 7, calendar.getTime());
-        Date filterEndDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 5, calendar.getTime());
-
-
-
-        nodes = new ArrayList<>();
-        exampleLayouts = new ArrayList<>();
-        exampleLayoutRenderables = new ArrayList<ViewRenderable>();
-        locationMarkers = new ArrayList<LocationMarker>();
-        locationMarkersCustom = new ArrayList<LocationMarkerCustom>();
-
+    public void initializeAndCallAPI()
+    {
         DisposablesManager.add(
                 AOTService.fetchObservationsFromNearbyNodes(longitude, latitude, distance, apiStartDate, apiEndDate)
                         .subscribeOn(Schedulers.io())
@@ -131,28 +122,11 @@ public class MainActivity extends AppCompatActivity
                         .subscribe(node -> {
                                     Log.i(TAG, "node emitted: " + node.toString());
                                     nodes.add(node);
-//                                    helloWorldLabel.setText("\nNode: " + node.toString());
 
-//                                    if (exampleLayouts== null)
-//                                    {
-//                                        exampleLayouts = new ArrayList<>();
-//                                    }
-
-
-                                    //if(count1<=4) {
                                     exampleLayouts.add(
                                             ViewRenderable.builder()
                                                     .setView(this,R.layout.inner_layout)
                                                     .build());
-                                    //}
-//                                    exampleLayout =
-//                                            ViewRenderable.builder()
-//                                                    .setView(this, R.layout.example_layout)
-//                                                    .build();
-//                                    exampleLayout1 =
-//                                            ViewRenderable.builder()
-//                                                    .setView(this, R.layout.example_layout)
-//                                                    .build();
 
                                     if (node.getObservations() != null) {
                                         Log.i(TAG, "node has: " + node.getObservations().size() + " observations from " + node.getSensors().size() + " sensors");
@@ -160,28 +134,20 @@ public class MainActivity extends AppCompatActivity
                                         if (!node.getObservations().isEmpty()) {
                                             DisposablesManager.add(
                                                     AOTService.filterObservations(node.getObservations(), sensorType, filterStartDate, filterEndDate)
-                                                    .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "avg"))
-                                                    .subscribe(aotObservation -> {
-                                                            helloWorldLabel.setText("\nNode: " + node.toString());
-                                                            if(aotObservation.getSensorPath() != null) {
-                                                                helloWorldLabel.append("\n" + sensorType.name() + ": " + aotObservation.getValue(useImperialUnits) +" " +aotObservation.getUnits(useImperialUnits));
-                                                            }
-                                                            else {
-                                                                helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
-                                                            }
-                                                            helloWorldLabel.append("\n");
-                                                        },
-                                                        throwable -> Log.e(TAG, "Error while filtering/aggregating observations:", throwable)
-                                                    )
+                                                            .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "avg"))
+                                                            .subscribe(aotObservation -> {
+                                                                        helloWorldLabel.setText("\nNode: " + node.toString());
+                                                                        if(aotObservation.getSensorPath() != null) {
+                                                                            helloWorldLabel.append("\n" + sensorType.name() + ": " + aotObservation.getValue(useImperialUnits) +" " +aotObservation.getUnits(useImperialUnits));
+                                                                        }
+                                                                        else {
+                                                                            helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
+                                                                        }
+                                                                        helloWorldLabel.append("\n");
+                                                                    },
+                                                                    throwable -> Log.e(TAG, "Error while filtering/aggregating observations:", throwable)
+                                                            )
                                             );
-//                                            List<AOTObservation> temperatureData = AOTService.filterObservations(node.getObservations(), sensorType, filterStartDate, filterEndDate);
-//                                            if(temperatureData != null && !temperatureData.isEmpty()) {
-//                                                AOTObservation aggregatedObservation = AOTService.aggregateObservations(temperatureData, "avg");
-//                                                helloWorldLabel.append("\n" + sensorType.name() + ": " + aggregatedObservation.getValue(useImperialUnits) +" " +aggregatedObservation.getUnits(useImperialUnits));
-//                                            }
-//                                            else {
-//                                                helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
-//                                            }
                                         }
                                     }
                                     else {
@@ -198,6 +164,68 @@ public class MainActivity extends AppCompatActivity
                                 }
                         )
         );
+    }
+
+    public void distanceRefreshed(int dist)
+    {
+
+        nodes = new ArrayList<>();
+        exampleLayouts = new ArrayList<>();
+        exampleLayoutRenderables = new ArrayList<ViewRenderable>();
+        locationMarkers = new ArrayList<LocationMarker>();
+        locationMarkersCustom = new ArrayList<LocationMarkerCustom>();
+        locationScene=null;
+        this.distance=dist;
+
+        try {
+            mFusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            // Got last known location. In some rare situations this can be null.
+                            if (location != null) {
+                                // Logic to handle location object
+                                latitude=location.getLatitude();
+                                longitude=location.getLongitude();
+                            }
+                            else
+                            {
+                                longitude = -87.662111;
+                                latitude = 41.871629;
+                            }
+                            initializeAndCallAPI();
+                        }
+                    });
+        }
+        catch(SecurityException se)
+        {
+            Toast.makeText(
+                    this, "Location permission is needed to run this application", Toast.LENGTH_LONG)
+                    .show();
+            finish();
+        }
+    }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        // Revert to default theme which was changed for showing launch screen
+        setTheme(R.style.AppTheme_NoActionBar);
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        arSceneView = findViewById(R.id.ar_scene_view);
+
+        helloWorldLabel = findViewById(R.id.textTime);
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        Calendar calendar = Calendar.getInstance();
+        apiStartDate = Utils.stripTimeFromLocalDate(calendar.getTime());
+        apiEndDate = Utils.stringToLocalDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH));
+        distance = PreferenceManager.getDefaultSharedPreferences(this).getInt("distanceThreshold", 2000);
+        useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useImperialUnits", false);
+
+        sensorType = AOTSensorType.TEMPERATURE;
+        filterStartDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 7, calendar.getTime());
+        filterEndDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 5, calendar.getTime());
+        distanceRefreshed(distance);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -249,22 +277,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-
-        // Build a renderable from a 2D View.
-//         exampleLayout =
-//                ViewRenderable.builder()
-//                        .setView(this, R.layout.example_layout)
-//                        .build();
-
-        // When you build a Renderable, Sceneform loads its resources in the background while returning
-        // a CompletableFuture. Call thenAccept(), handle(), or check isDone() before calling get().
-//        CompletableFuture<ModelRenderable> andy = ModelRenderable.builder()
-//                .setSource(this, R.raw.andy)
-//                .build();
-
-        //handleCompleteableFutures();
-
-
         // Set an update listener on the Scene that will hide the loading message once a Plane is
         // detected.
         arSceneView
@@ -279,22 +291,7 @@ public class MainActivity extends AppCompatActivity
                                 // If our locationScene object hasn't been setup yet, this is a good time to do it
                                 // We know that here, the AR components have been initiated.
                                 locationScene = new LocationScene(this, this, arSceneView);
-                                //locationMarkers= new ArrayList<LocationMarker>();
 
-                                //for (int i=0; i<2;i++)
-                                //{
-//                                    locationMarkers.add(new LocationMarker(
-//                                        -87.664400,
-//                                        41.871910,
-//                                        getExampleView(0)));
-
-//                                locationMarkers.add(new LocationMarker(
-//                                        -87.654076,
-//                                        41.86946,
-//                                        getExampleView(1)));
-
-
-                                //}
                                 // Now lets create our location markers.
                                 // First, a layout
                                 for (int i=0; i<nodes.size(); i++)
@@ -305,89 +302,16 @@ public class MainActivity extends AppCompatActivity
                                             nodes.get(i).getLocation().lat(), exampleLayoutRenderables.get(i)));
                                 }
 
-//                                locationMarkers.add(createLocationMarker(-87.664400,
-//                                        41.871910, exampleLayoutRenderables.get(0)));
-//                                locationMarkers.add(createLocationMarker(-87.654608,
-//                                        41.869678, exampleLayoutRenderables.get(1)));
-                                //LocationMarker layoutLocationMarker = createLocationMarker(-87.664400,
-                                //        41.871910, exampleLayoutRenderables.get(0));
-
-//                                        new LocationMarker(
-//                                        -87.664400,
-//                                        41.871910,
-//                                        getExampleView1(exampleLayoutRenderables.get(0))
-//                                );
-//                                LocationMarker layoutLocationMarker1 = createLocationMarker(-87.654608,
-//                                        41.869678, exampleLayoutRenderables.get(1));
-
-//                                LocationMarker layoutLocationMarker1 = new LocationMarker(
-//                                        -87.654608,
-//                                        41.869678,
-//                                        getExampleView1(exampleLayoutRenderables.get(1))
-//                                );
                                 for(int i=0; i<nodes.size(); i++)
                                 {
                                     setRenderEvent(locationMarkers.get(i), exampleLayoutRenderables.get(i), nodes.get(i));
                                 }
 
-                                // An example "onRender" event, called every frame
-                                // Updates the layout with the markers distance
-//                                locationMarkers.get(0).setRenderEvent(new LocationNodeRender() {
-//                                    @Override
-//                                    public void render(LocationNode node) {
-//                                        //View eView = exampleLayoutRenderables.get(0).getView();
-//                                        View eView = exampleLayoutRenderables.get(0).getView();
-//                                        TextView distanceTextView = eView.findViewById(R.id.textView2);
-//                                        distanceTextView.setText(node.getDistance() + "M");
-//                                    }
-//                                });
-
-//                                locationMarkers.get(1).setRenderEvent(new LocationNodeRender() {
-//                                    @Override
-//                                    public void render(LocationNode node) {
-//                                        //View eView = exampleLayoutRenderables.get(0).getView();
-//                                        View eView = exampleLayoutRenderables.get(1).getView();
-//                                        TextView distanceTextView = eView.findViewById(R.id.textView2);
-//                                        distanceTextView.setText(node.getDistance() + "M");
-//                                    }
-//                                });
-
-//                                locationMarkers.get(0).setRenderEvent(new LocationNodeRender() {
-//                                    @Override
-//                                    public void render(LocationNode node) {
-//                                        //View eView = exampleLayoutRenderables.get(0).getView();
-//                                        View eView = exampleLayoutRenderables.get(0).getView();
-//                                        TextView distanceTextView = eView.findViewById(R.id.textView2);
-//                                        distanceTextView.setText(node.getDistance() + "M");
-//                                    }
-//                                });
-
-//                                locationMarkers.get(1).setRenderEvent(new LocationNodeRender() {
-//                                    @Override
-//                                    public void render(LocationNode node) {
-//                                        //View eView = exampleLayoutRenderables.get(0).getView();
-//                                        View eView = exampleLayoutRenderables.get(1).getView();
-//                                        TextView distanceTextView = eView.findViewById(R.id.textView2);
-//                                        distanceTextView.setText(node.getDistance() + "M");
-//                                    }
-//                                });
                                 // Adding the marker
                                 for(int i=0; i< nodes.size();i++) {
                                     locationScene.mLocationMarkers.add(locationMarkers.get(i));
 
                                 }
-                                //locationScene.mLocationMarkers.add(locationMarkers.get(1));
-                                //locationScene.mLocationMarkers.add(locationMarkers.get(2));
-                                //locationScene.mLocationMarkers.add(locationMarkers.get(3));
-                                //locationScene.mLocationMarkers.add(locationMarkers.get(0));
-                                //locationScene.mLocationMarkers.add(locationMarkers.get(1));
-
-                                // Adding a simple location marker of a 3D model
-//                                locationScene.mLocationMarkers.add(
-//                                        new LocationMarker(
-//                                                -0.119677,
-//                                                51.478494,
-//                                                getAndy()));
                             }
 
                             Frame frame = arSceneView.getArFrame();
@@ -674,11 +598,6 @@ public class MainActivity extends AppCompatActivity
     private void handleCompleteableFutures()
     {
         CompletableFuture.allOf(exampleLayouts.toArray(new CompletableFuture[exampleLayouts.size()]))
-                //CompletableFuture.allOf(
-                //        exampleLayouts.get(0),
-                //        exampleLayouts.get(1),
-                //        exampleLayouts.get(2),
-                //        exampleLayouts.get(3))
                 .handle(
                         (notUsed, throwable) -> {
                             // When you build a Renderable, Sceneform loads its resources in the background while
@@ -691,21 +610,11 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             try {
-//                                if(exampleLayoutRenderables== null) {
-//                                    exampleLayoutRenderables = new ArrayList<ViewRenderable>();
-//                                }
-//                                for (CompletableFuture<ViewRenderable> a : exampleLayouts) {
-//                                    exampleLayoutRenderables.add(a.get());
-//                                }
+
                                 for(int i=0; i< nodes.size(); i++) {
                                     exampleLayoutRenderables.add(exampleLayouts.get(i).get());
                                 }
-                                //exampleLayoutRenderable = exampleLayout.get();
-                                //exampleLayoutRenderable1 = exampleLayout1.get();
-                                //exampleLayoutRenderables.add(exampleLayouts.get(0).get());
-                                //exampleLayoutRenderables.add(exampleLayouts.get(1).get());
 
-                                //andyRenderable = andy.get();
                                 hasFinishedLoading = true;
 
                             } catch (InterruptedException | ExecutionException ex) {
