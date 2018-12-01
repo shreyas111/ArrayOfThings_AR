@@ -224,16 +224,6 @@ public class MainActivity extends AppCompatActivity
         filterEndDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 5, calendar.getTime());
         distanceRefreshed(distance);
 
-
-
-
-//        nodes = new ArrayList<>();
-//        exampleLayouts = new ArrayList<>();
-//        exampleLayoutRenderables = new ArrayList<ViewRenderable>();
-//        locationMarkers = new ArrayList<LocationMarker>();
-//        locationMarkersCustom = new ArrayList<LocationMarkerCustom>();
-
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //mDate= findViewById(R.id.textDate);
@@ -284,22 +274,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-
-        // Build a renderable from a 2D View.
-//         exampleLayout =
-//                ViewRenderable.builder()
-//                        .setView(this, R.layout.example_layout)
-//                        .build();
-
-        // When you build a Renderable, Sceneform loads its resources in the background while returning
-        // a CompletableFuture. Call thenAccept(), handle(), or check isDone() before calling get().
-//        CompletableFuture<ModelRenderable> andy = ModelRenderable.builder()
-//                .setSource(this, R.raw.andy)
-//                .build();
-
-        //handleCompleteableFutures();
-
-
         // Set an update listener on the Scene that will hide the loading message once a Plane is
         // detected.
         arSceneView
@@ -314,22 +288,7 @@ public class MainActivity extends AppCompatActivity
                                 // If our locationScene object hasn't been setup yet, this is a good time to do it
                                 // We know that here, the AR components have been initiated.
                                 locationScene = new LocationScene(this, this, arSceneView);
-                                //locationMarkers= new ArrayList<LocationMarker>();
 
-                                //for (int i=0; i<2;i++)
-                                //{
-//                                    locationMarkers.add(new LocationMarker(
-//                                        -87.664400,
-//                                        41.871910,
-//                                        getExampleView(0)));
-
-//                                locationMarkers.add(new LocationMarker(
-//                                        -87.654076,
-//                                        41.86946,
-//                                        getExampleView(1)));
-
-
-                                //}
                                 // Now lets create our location markers.
                                 // First, a layout
                                 for (int i=0; i<nodes.size(); i++)
@@ -340,89 +299,16 @@ public class MainActivity extends AppCompatActivity
                                             nodes.get(i).getLocation().lat(), exampleLayoutRenderables.get(i)));
                                 }
 
-//                                locationMarkers.add(createLocationMarker(-87.664400,
-//                                        41.871910, exampleLayoutRenderables.get(0)));
-//                                locationMarkers.add(createLocationMarker(-87.654608,
-//                                        41.869678, exampleLayoutRenderables.get(1)));
-                                //LocationMarker layoutLocationMarker = createLocationMarker(-87.664400,
-                                //        41.871910, exampleLayoutRenderables.get(0));
-
-//                                        new LocationMarker(
-//                                        -87.664400,
-//                                        41.871910,
-//                                        getExampleView1(exampleLayoutRenderables.get(0))
-//                                );
-//                                LocationMarker layoutLocationMarker1 = createLocationMarker(-87.654608,
-//                                        41.869678, exampleLayoutRenderables.get(1));
-
-//                                LocationMarker layoutLocationMarker1 = new LocationMarker(
-//                                        -87.654608,
-//                                        41.869678,
-//                                        getExampleView1(exampleLayoutRenderables.get(1))
-//                                );
                                 for(int i=0; i<nodes.size(); i++)
                                 {
                                     setRenderEvent(locationMarkers.get(i), exampleLayoutRenderables.get(i), nodes.get(i));
                                 }
 
-                                // An example "onRender" event, called every frame
-                                // Updates the layout with the markers distance
-//                                locationMarkers.get(0).setRenderEvent(new LocationNodeRender() {
-//                                    @Override
-//                                    public void render(LocationNode node) {
-//                                        //View eView = exampleLayoutRenderables.get(0).getView();
-//                                        View eView = exampleLayoutRenderables.get(0).getView();
-//                                        TextView distanceTextView = eView.findViewById(R.id.textView2);
-//                                        distanceTextView.setText(node.getDistance() + "M");
-//                                    }
-//                                });
-
-//                                locationMarkers.get(1).setRenderEvent(new LocationNodeRender() {
-//                                    @Override
-//                                    public void render(LocationNode node) {
-//                                        //View eView = exampleLayoutRenderables.get(0).getView();
-//                                        View eView = exampleLayoutRenderables.get(1).getView();
-//                                        TextView distanceTextView = eView.findViewById(R.id.textView2);
-//                                        distanceTextView.setText(node.getDistance() + "M");
-//                                    }
-//                                });
-
-//                                locationMarkers.get(0).setRenderEvent(new LocationNodeRender() {
-//                                    @Override
-//                                    public void render(LocationNode node) {
-//                                        //View eView = exampleLayoutRenderables.get(0).getView();
-//                                        View eView = exampleLayoutRenderables.get(0).getView();
-//                                        TextView distanceTextView = eView.findViewById(R.id.textView2);
-//                                        distanceTextView.setText(node.getDistance() + "M");
-//                                    }
-//                                });
-
-//                                locationMarkers.get(1).setRenderEvent(new LocationNodeRender() {
-//                                    @Override
-//                                    public void render(LocationNode node) {
-//                                        //View eView = exampleLayoutRenderables.get(0).getView();
-//                                        View eView = exampleLayoutRenderables.get(1).getView();
-//                                        TextView distanceTextView = eView.findViewById(R.id.textView2);
-//                                        distanceTextView.setText(node.getDistance() + "M");
-//                                    }
-//                                });
                                 // Adding the marker
                                 for(int i=0; i< nodes.size();i++) {
                                     locationScene.mLocationMarkers.add(locationMarkers.get(i));
 
                                 }
-                                //locationScene.mLocationMarkers.add(locationMarkers.get(1));
-                                //locationScene.mLocationMarkers.add(locationMarkers.get(2));
-                                //locationScene.mLocationMarkers.add(locationMarkers.get(3));
-                                //locationScene.mLocationMarkers.add(locationMarkers.get(0));
-                                //locationScene.mLocationMarkers.add(locationMarkers.get(1));
-
-                                // Adding a simple location marker of a 3D model
-//                                locationScene.mLocationMarkers.add(
-//                                        new LocationMarker(
-//                                                -0.119677,
-//                                                51.478494,
-//                                                getAndy()));
                             }
 
                             Frame frame = arSceneView.getArFrame();
@@ -709,11 +595,6 @@ public class MainActivity extends AppCompatActivity
     private void handleCompleteableFutures()
     {
         CompletableFuture.allOf(exampleLayouts.toArray(new CompletableFuture[exampleLayouts.size()]))
-                //CompletableFuture.allOf(
-                //        exampleLayouts.get(0),
-                //        exampleLayouts.get(1),
-                //        exampleLayouts.get(2),
-                //        exampleLayouts.get(3))
                 .handle(
                         (notUsed, throwable) -> {
                             // When you build a Renderable, Sceneform loads its resources in the background while
@@ -726,21 +607,11 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             try {
-//                                if(exampleLayoutRenderables== null) {
-//                                    exampleLayoutRenderables = new ArrayList<ViewRenderable>();
-//                                }
-//                                for (CompletableFuture<ViewRenderable> a : exampleLayouts) {
-//                                    exampleLayoutRenderables.add(a.get());
-//                                }
+
                                 for(int i=0; i< nodes.size(); i++) {
                                     exampleLayoutRenderables.add(exampleLayouts.get(i).get());
                                 }
-                                //exampleLayoutRenderable = exampleLayout.get();
-                                //exampleLayoutRenderable1 = exampleLayout1.get();
-                                //exampleLayoutRenderables.add(exampleLayouts.get(0).get());
-                                //exampleLayoutRenderables.add(exampleLayouts.get(1).get());
 
-                                //andyRenderable = andy.get();
                                 hasFinishedLoading = true;
 
                             } catch (InterruptedException | ExecutionException ex) {
