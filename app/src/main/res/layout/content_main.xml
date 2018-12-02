@@ -14,8 +14,6 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />
 
-    <!--<include android:id="@+id/graph_layout" layout="@layout/graph_layout" />-->
-
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -27,11 +25,5 @@
         android:id="@+id/refreshButton"
         app:layout_anchor="@id/ar_scene_view"
         app:layout_anchorGravity="bottom|right|end" />
-
-    <TextView
-        android:id="@+id/textTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="This is the Current Time" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

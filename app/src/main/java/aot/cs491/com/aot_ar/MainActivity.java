@@ -114,7 +114,6 @@ public class MainActivity extends AppCompatActivity
     private ViewRenderable exampleLayoutRenderable1;
     // Our ARCore-Location scene
     private LocationScene locationScene;
-    TextView helloWorldLabel;
     public static final String TAG = MainActivity.class.getSimpleName();
 
     List <AOTNode> nodes = null;
@@ -147,12 +146,6 @@ public class MainActivity extends AppCompatActivity
                                             filterAndAggregateObservations(node);
                                         }
                                     }
-                                    else {
-                                        helloWorldLabel.setText("\nNode: " + node.toString());
-                                        helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
-                                        helloWorldLabel.append("\n");
-                                    }
-                                    helloWorldLabel.append("\n");
                                 },
                                 throwable -> {
                                     Log.e(TAG, "Error while fetching nearby nodes:", throwable);
@@ -246,7 +239,6 @@ public class MainActivity extends AppCompatActivity
 
         coordinatorLayout = findViewById(R.id.coordinator);
 
-        helloWorldLabel = findViewById(R.id.textTime);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         refreshButton = findViewById(R.id.refreshButton);
