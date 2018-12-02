@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -126,6 +128,10 @@ public class MainActivity extends AppCompatActivity
     public void initializeAndCallAPI()
     {
         showProgressView("Finding nearby nodes ...");
+
+        AtomicBoolean everythingIsDone = new AtomicBoolean(false);
+        AtomicBoolean handlerCalled = new AtomicBoolean(false);
+
         DisposablesManager.add(
                 AOTService.fetchObservationsFromNearbyNodes(longitude, latitude, distance, apiStartDate, apiEndDate)
                         .subscribeOn(Schedulers.io())
@@ -144,7 +150,13 @@ public class MainActivity extends AppCompatActivity
                                         Log.i(TAG, "node has: " + node.getObservations().size() + " observations from " + node.getSensors().size() + " sensors");
 
                                         if (!node.getObservations().isEmpty()) {
-                                            filterAndAggregateObservations(node);
+                                            filterAndAggregateObservations(node, aotNode -> {
+                                                if(everythingIsDone.get() && !handlerCalled.get()) {
+                                                    handlerCalled.set(true);
+                                                    handleCompleteableFutures();
+                                                }
+                                                return null;
+                                            });
                                         }
                                     }
                                 },
@@ -154,13 +166,14 @@ public class MainActivity extends AppCompatActivity
                                 },
                                 () -> {
                                     Log.i(TAG, "Finished fetching nearby nodes");
-                                    handleCompleteableFutures();
+                                    everythingIsDone.set(true);
+//                                    handleCompleteableFutures();
                                 }
                         )
         );
     }
 
-    private void filterAndAggregateObservations(AOTNode node) {
+    private void filterAndAggregateObservations(AOTNode node, Function<AOTNode, Void> onComplete) {
         List<Observable<List<AOTObservation>>> filterCalls = new ArrayList<>();
         for(AOTSensorType aSensorType: AOTSensorType.values()) {
             filterCalls.add(AOTService.filterObservations(node.getObservations(), aSensorType, filterStartDate, filterEndDate).toObservable());
@@ -180,7 +193,8 @@ public class MainActivity extends AppCompatActivity
                                         node.getAggregatedObservations().put(aotObservation.getSensorType(), null);
                                     }
                                 },
-                                throwable -> Log.e(TAG, "Error while filtering/aggregating observations:", throwable)
+                                throwable -> Log.e(TAG, "Error while filtering/aggregating observations:", throwable),
+                                () -> onComplete.apply(node)
                         )
         );
 //                                                            })
@@ -971,10 +985,11 @@ public class MainActivity extends AppCompatActivity
         if(shouldRefresh) {
             if (markersAdded) {
                 for (AOTNode node : nodes) {
-                    filterAndAggregateObservations(node);
-                }
-                for (int i = 0; i < nodes.size(); i++) {
-                    setInnerLayoutValues(exampleLayoutRenderables.get(i), nodes.get(i), i);
+                    filterAndAggregateObservations(node, aotNode -> {
+                        int i = nodes.indexOf(aotNode);
+                        setInnerLayoutValues(exampleLayoutRenderables.get(i), aotNode, i);
+                        return null;
+                    });
                 }
             } else {
                 Toast.makeText(
