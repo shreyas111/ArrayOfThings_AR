@@ -9,9 +9,12 @@ public enum AOTSensorType {
 
 
     // Cloud cover
-    LIGHT_INTENSITY("chemsense.si1145.visible_light_intensity"),
-    INFRA_RED_LIGHT("chemsense.si1145.ir_intensity"),
-    ULTRA_VIOLET_LIGHT("chemsense.si1145.uv_intensity"),
+//    LIGHT_INTENSITY("chemsense.si1145.visible_light_intensity"),
+//    INFRA_RED_LIGHT("chemsense.si1145.ir_intensity"),
+//    ULTRA_VIOLET_LIGHT("chemsense.si1145.uv_intensity"),
+    LIGHT_INTENSITY("lightsense.apds_9006_020.intensity"),
+    INFRA_RED_LIGHT("lightsense.tsl260rd.intensity"),
+    ULTRA_VIOLET_LIGHT("lightsense.ml8511.intensity"),
 
     // Air Quality
     CARBON_MONOXIDE("chemsense.co.concentration"),
@@ -52,6 +55,7 @@ public enum AOTSensorType {
                 return imperial ? "hPa" : "inHg";
 
             case LIGHT_INTENSITY:
+                return "lux";
             case INFRA_RED_LIGHT:
             case ULTRA_VIOLET_LIGHT:
                 return "μW/cm²";
