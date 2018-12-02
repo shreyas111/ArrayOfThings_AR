@@ -6,52 +6,81 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <include
+        layout="@layout/content_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="top" />
+
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" >
+            android:layout_gravity="top"
+            android:background="@color/translucent"
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:title=" ">
 
-            <!--<TextView-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:paddingTop="@dimen/nav_header_vertical_spacing"-->
-            <!--android:text="@string/nav_header_title"-->
-            <!--android:textAppearance="@style/TextAppearance.AppCompat.Body1" />-->
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab"
-                android:backgroundTint="@color/colorPrimary"
+            <Button
+                android:id="@+id/dateButton"
+                style="?android:attr/buttonBarStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                app:srcCompat="@drawable/calendar1" />
+                android:drawableStart="@drawable/date"
+                android:drawableTint="?android:textColorPrimary"
+                android:drawableTintMode="src_atop"
+                android:drawablePadding="8dp"
+                android:padding="16dp"
+                android:text="Date" />
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab1"
-                android:backgroundTint="@color/colorPrimary"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                app:srcCompat="@drawable/calendar1" />
+                android:layout_height="wrap_content">
 
-            <!--<ImageButton-->
-            <!--android:id="@+id/button_one"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:src="@drawable/calendar2" />-->
-            <!--app:backgroundTint="@null"-->
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toLeftOf="@id/timePicker"
+                    android:paddingLeft="24dp"
+                    android:src="@drawable/time"
+                    android:tint="?android:textColorPrimary"
+                    android:tintMode="src_atop"/>
 
+                <com.shawnlin.numberpicker.NumberPicker
+                    android:id="@+id/timePicker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:np_width="72dp"
+                    app:np_dividerColor="?android:textColorPrimary"
+                    app:np_dividerDistance="48dp"
+                    app:np_orientation="horizontal"
+                    app:np_wrapSelectorWheel="false"
+                    app:np_wheelItemCount="3"
+                    app:np_max="23"
+                    app:np_min="0"
+                    app:np_selectedTextColor="?android:textColorPrimary"
+                    app:np_textColor="?android:textColorSecondary"
+                    app:np_selectedTextSize="32dp"
+                    app:np_textSize="24dp"
+                    app:np_value="0" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.appcompat.widget.Toolbar>
-    </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_main" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <!--<android.support.design.widget.FloatingActionButton-->
     <!--android:id="@+id/fab1"-->

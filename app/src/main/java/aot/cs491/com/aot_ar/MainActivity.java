@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -36,11 +37,13 @@ import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
+import com.shawnlin.numberpicker.NumberPicker;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -68,7 +71,7 @@ import uk.co.appoly.arcorelocation.rendering.LocationNodeRender;
 import uk.co.appoly.arcorelocation.utils.ARLocationPermissionHelper;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener
+        implements NavigationView.OnNavigationItemSelectedListener, DatePickerDialog.OnDateSetListener, NumberPicker.OnValueChangeListener
 {
 
     int count1 =0;
@@ -87,11 +90,10 @@ public class MainActivity extends AppCompatActivity
     boolean useImperialUnits;
 
     static final int DIALOG_ID = 0;
-    FloatingActionButton fab;
-    FloatingActionButton fab1;
 
-    //TextView mDate;
-    //TextView mTime;
+    Button dateButton;
+    DatePickerDialog datePickerDialog;
+    NumberPicker timePicker;
 
     private boolean installRequested;
     private boolean hasFinishedLoading = false;
@@ -227,58 +229,30 @@ public class MainActivity extends AppCompatActivity
 
         helloWorldLabel = findViewById(R.id.textTime);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        // Initialize date picker
         Calendar calendar = Calendar.getInstance();
-//        apiStartDate = Utils.stripTimeFromLocalDate(calendar.getTime());
-        apiStartDate = Utils.stripTimeFromLocalDate(Utils.stringToLocalDate(2018, 11, 30));
-        apiEndDate = calendar.getTime();
+
+        datePickerDialog = new DatePickerDialog(this);
+        datePickerDialog.setOnDateSetListener(this);
+        dateButton = findViewById(R.id.dateButton);
+        dateButton.setOnClickListener(v -> datePickerDialog.show());
+        timePicker = findViewById(R.id.timePicker);
+
+        // Set default date and time
+        onDateSet(null, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+        onValueChange(null, 0, calendar.get(Calendar.HOUR_OF_DAY));
+        timePicker.setValue(calendar.get(Calendar.HOUR_OF_DAY));
+
         distance = PreferenceManager.getDefaultSharedPreferences(this).getInt("distanceThreshold", 2000);
         useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useImperialUnits", false);
 
         sensorType = AOTSensorType.TEMPERATURE;
-        filterStartDate = Utils.setHoursForLocalDate(15, apiStartDate);
-        filterEndDate = Utils.setHoursForLocalDate(16, apiStartDate);
+
         distanceRefreshed(distance);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        //mDate= findViewById(R.id.textDate);
-        //mTime= findViewById(R.id.textTime);
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab1 = (FloatingActionButton) findViewById(R.id.fab1);
-
-        fab.setOnClickListener(view -> {
-            Snackbar snackbar = Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Select a Date", Snackbar.LENGTH_LONG);
-            snackbar.getView().setBackgroundColor(0xbf323232);
-            snackbar.show();
-
-            Calendar now = Calendar.getInstance();
-            DatePickerDialog dialog = new DatePickerDialog(
-                    MainActivity.this,
-                    MainActivity.this,
-                    now.get(Calendar.YEAR), // Initial year selection
-                    now.get(Calendar.MONTH), // Initial month selection
-                    now.get(Calendar.DAY_OF_MONTH) // Inital day selection
-            );
-            dialog.show();
-        });
-
-        fab1.setOnClickListener(view -> {
-            Snackbar snackbar = Snackbar.make(MainActivity.this.findViewById(android.R.id.content), "Select a Time", Snackbar.LENGTH_LONG);
-            snackbar.getView().setBackgroundColor(0xbf323232);
-            snackbar.show();
-
-            Calendar now = Calendar.getInstance();
-            TimePickerDialog dialog = new TimePickerDialog(
-                    MainActivity.this,
-                    MainActivity.this,
-                    now.get(Calendar.HOUR_OF_DAY), // Initial year selection
-                    now.get(Calendar.MINUTE), // Initial month selection
-                    false
-                    );
-            dialog.show();
-        });
-
-
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -353,22 +327,6 @@ public class MainActivity extends AppCompatActivity
 
         // Lastly request CAMERA & fine location permission which is required by ARCore-Location.
         ARLocationPermissionHelper.requestPermission(this);
-    }
-
-    @Override
-    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        String time = "You picked the following time: "+hourOfDay+"h "+minute +"m";
-        Snackbar snackbar = Snackbar.make(MainActivity.this.findViewById(android.R.id.content), time, Snackbar.LENGTH_LONG);
-        snackbar.getView().setBackgroundColor(0xbf323232);
-        snackbar.show();
-    }
-
-    @Override
-    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-        String date = "You picked the following date: "+dayOfMonth+"/"+(monthOfYear+1)+"/"+year;
-        Snackbar snackbar = Snackbar.make(MainActivity.this.findViewById(android.R.id.content), date, Snackbar.LENGTH_LONG);
-        snackbar.getView().setBackgroundColor(0xbf323232);
-        snackbar.show();
     }
 
     @Override
@@ -921,5 +879,20 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+        apiStartDate = Utils.stringToLocalDate(year, month + 1, dayOfMonth);
+        apiEndDate = Utils.setTimeForLocalDate(23, 59, 59, apiStartDate);
+        dateButton.setText(Utils.dateToString(apiStartDate, "EEE, MMM d, ''yy", TimeZone.getDefault()));
 
+        // TODO: Trigger API fetch and filter, aggregation
+    }
+
+    @Override
+    public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+        filterStartDate = Utils.setTimeForLocalDate(newVal, 0, 0, apiStartDate);
+        filterEndDate = Utils.setTimeForLocalDate(newVal, 59, 59, apiStartDate);
+
+        // TODO: Trigger filter and aggregation
+    }
 }

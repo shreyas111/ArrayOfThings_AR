@@ -13,9 +13,9 @@
     <SeekBarPreference
         app:key="distanceThreshold"
         app:title="Nearby nodes maximum distance"
-        app:summary="How far away nodes to display (in Kilometers)"
+        app:summary="How far off nodes to display (in meters)"
         app:min="100"
-        android:max="9999"
+        android:max="5000"
         app:icon="@drawable/ruler"
         app:defaultValue="2000" />
 
