@@ -4,8 +4,9 @@ public enum AOTSensorType {
 
     // Weather (Meteorology)
     TEMPERATURE("metsense.pr103j2.temperature"),
-    HUMIDITY("metsense.hih4030.humidity"),
     PRESSURE("metsense.bmp180.pressure"),
+    HUMIDITY("metsense.hih4030.humidity"),
+
 
     // Cloud cover
     LIGHT_INTENSITY("chemsense.si1145.visible_light_intensity"),

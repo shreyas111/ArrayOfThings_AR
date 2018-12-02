@@ -454,6 +454,7 @@ public class MainActivity extends AppCompatActivity
         TextView textViewData1 = eView.findViewById(R.id.textView_temp);
         TextView textViewData2 = eView.findViewById(R.id.textView_pres);
         TextView textViewData3 = eView.findViewById(R.id.textView_hum);
+        TextView textViewDistance = eView.findViewById(R.id.textView_dist1);
         //View compLayout = findViewById(R.id.comp_layout_id);
         //TextView compLayoutText1 = compLayout.findViewById(R.id.comptext1);
 
@@ -470,42 +471,25 @@ public class MainActivity extends AppCompatActivity
                     vgraph.setVisibility(LinearLayout.GONE);
 
                 }
-                v.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.VISIBLE);
-                GraphView graph = (GraphView) v.findViewById(R.id.graph1);
-                graph.removeAllSeries();
-                LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[]{
-                        new DataPoint(0, 1),
-                        new DataPoint(1, 5),
-                        new DataPoint(2, 3),
-                        new DataPoint(3, 5),
-                        new DataPoint(4, 17),
-                        new DataPoint(5, 5),
-                        new DataPoint(6, 5),
-                        new DataPoint(7, 23),
-                        new DataPoint(8, 18),
-                        new DataPoint(9, 5),
-                        new DataPoint(10, 5),
-                        new DataPoint(11, 7),
-                        new DataPoint(12, 13),
-                        new DataPoint(13, 5),
-                        new DataPoint(14, 3),
-                        new DataPoint(15, 23),
-                        new DataPoint(16, 5),
-                        new DataPoint(17, 2),
-                        new DataPoint(18, 5),
-                        new DataPoint(19, 2),
-                        new DataPoint(20, 2),
-                        new DataPoint(21, 5),
-                        new DataPoint(22, 4),
-                        new DataPoint(23, 6),
-                });
-                graph.addSeries(series);
 
 
                 Toast.makeText(
                         c, "Location Marker Long Pressed.", Toast.LENGTH_LONG)
                         .show();
                 return false;
+            }
+        });
+
+        textViewDistance.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinearLayout l = (LinearLayout) v.getParent().getParent().getParent();
+                l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.GONE);
+
+                Toast.makeText(
+                        c, "Distance Marker Touched." + i, Toast.LENGTH_LONG)
+                        .show();
+                return ;
             }
         });
 
@@ -549,18 +533,91 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        textViewData2.setOnTouchListener((v, event) -> {
-            Toast.makeText(
-                    c, "Pres marker touched.", Toast.LENGTH_LONG)
-                    .show();
-            return false;
+        textViewData2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinearLayout l=(LinearLayout) v.getParent().getParent().getParent();
+                l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.VISIBLE);
+                GraphView graph = (GraphView) l.findViewById(R.id.graph1);
+                graph.removeAllSeries();
+                ArrayList <DataPoint> dataPointsList = new ArrayList<DataPoint>();
+                for (AOTObservation a:nodes.get(i).getObservations())
+                {
+                    if(menuOptionSelected.equals("weather")) {
+                        if (a.getSensorType().equals(AOTSensorType.PRESSURE)) {
+                            dataPointsList.add(new DataPoint(a.getTimestamp(), a.getValue(useImperialUnits)));
+                        }
+                    }
+                    else if (menuOptionSelected.equals("light"))
+                    {
+                        if (a.getSensorType().equals(AOTSensorType.INFRA_RED_LIGHT)) {
+                            dataPointsList.add(new DataPoint(a.getTimestamp(), a.getValue(useImperialUnits)));
+                        }
+                    }
+                    else if (menuOptionSelected.equals("airquality"))
+                    {
+                        if (a.getSensorType().equals(AOTSensorType.SULPHUR_DIOXIDE)) {
+                            dataPointsList.add(new DataPoint(a.getTimestamp(), a.getValue(useImperialUnits)));
+                        }
+                    }
+
+                }
+                DataPoint da[]=  dataPointsList.toArray(new DataPoint[dataPointsList.size()]);
+                LineGraphSeries<DataPoint> series = new LineGraphSeries<>(da);
+                graph.addSeries(series);
+
+                Toast.makeText(
+                        c, "Pressure Marker Touched." + i, Toast.LENGTH_LONG)
+                        .show();
+                return ;
+            }
         });
-        textViewData3.setOnTouchListener((v, event) -> {
-            Toast.makeText(
-                    c, "Hum marker touched.", Toast.LENGTH_LONG)
-                    .show();
-            return false;
+
+        textViewData3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinearLayout l=(LinearLayout) v.getParent().getParent().getParent();
+                if (l.findViewById(R.id.graph_layout_id).getVisibility() == View.GONE) {
+                    l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.VISIBLE);
+                } else if (l.findViewById(R.id.graph_layout_id).getVisibility() == View.VISIBLE){
+                    l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.GONE);
+                }
+
+                GraphView graph = (GraphView) l.findViewById(R.id.graph1);
+                graph.removeAllSeries();
+                ArrayList <DataPoint> dataPointsList = new ArrayList<DataPoint>();
+                for (AOTObservation a:nodes.get(i).getObservations())
+                {
+                    if(menuOptionSelected.equals("weather")) {
+                        if (a.getSensorType().equals(AOTSensorType.HUMIDITY)) {
+                            dataPointsList.add(new DataPoint(a.getTimestamp(), a.getValue(useImperialUnits)));
+                        }
+                    }
+                    else if (menuOptionSelected.equals("light"))
+                    {
+                        if (a.getSensorType().equals(AOTSensorType.ULTRA_VIOLET_LIGHT)) {
+                            dataPointsList.add(new DataPoint(a.getTimestamp(), a.getValue(useImperialUnits)));
+                        }
+                    }
+                    else if (menuOptionSelected.equals("airquality"))
+                    {
+                        if (a.getSensorType().equals(AOTSensorType.NITROGEN_DIOXIDE)) {
+                            dataPointsList.add(new DataPoint(a.getTimestamp(), a.getValue(useImperialUnits)));
+                        }
+                    }
+
+                }
+                DataPoint da[]=  dataPointsList.toArray(new DataPoint[dataPointsList.size()]);
+                LineGraphSeries<DataPoint> series = new LineGraphSeries<>(da);
+                graph.addSeries(series);
+
+                Toast.makeText(
+                        c, "Humidity Marker Touched." + i, Toast.LENGTH_LONG)
+                        .show();
+                return ;
+            }
         });
+
 
         return base;
     }
