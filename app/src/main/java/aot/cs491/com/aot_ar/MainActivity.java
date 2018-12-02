@@ -9,10 +9,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +51,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.preference.PreferenceManager;
@@ -88,6 +91,7 @@ public class MainActivity extends AppCompatActivity
 
     static final int DIALOG_ID = 0;
 
+    CoordinatorLayout coordinatorLayout;
     Button dateButton;
     DatePickerDialog datePickerDialog;
     NumberPicker timePicker;
@@ -100,6 +104,7 @@ public class MainActivity extends AppCompatActivity
     private boolean markersAdded=false;
 
     private Snackbar loadingMessageSnackbar = null;
+    private Snackbar progressViewSnackbar;
     private ArSceneView arSceneView;
     // Renderables for this example
     CompletableFuture<ViewRenderable> exampleLayout;
@@ -120,6 +125,7 @@ public class MainActivity extends AppCompatActivity
 
     public void initializeAndCallAPI()
     {
+        showProgressView("Finding nearby nodes ...");
         DisposablesManager.add(
                 AOTService.fetchObservationsFromNearbyNodes(longitude, latitude, distance, apiStartDate, apiEndDate)
                         .subscribeOn(Schedulers.io())
@@ -148,7 +154,10 @@ public class MainActivity extends AppCompatActivity
                                     }
                                     helloWorldLabel.append("\n");
                                 },
-                                throwable -> Log.e(TAG, "Error while fetching nearby nodes:", throwable),
+                                throwable -> {
+                                    Log.e(TAG, "Error while fetching nearby nodes:", throwable);
+                                    hideProgressView();
+                                },
                                 () -> {
                                     Log.i(TAG, "Finished fetching nearby nodes");
                                     handleCompleteableFutures();
@@ -186,7 +195,7 @@ public class MainActivity extends AppCompatActivity
 
     public void distanceRefreshed()
     {
-
+        showProgressView("Determining your location ...");
         nodes = new ArrayList<>();
         exampleLayouts = new ArrayList<>();
         exampleLayoutRenderables = new ArrayList<ViewRenderable>();
@@ -234,6 +243,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         arSceneView = findViewById(R.id.ar_scene_view);
         menuOptionSelected="weather";
+
+        coordinatorLayout = findViewById(R.id.coordinator);
 
         helloWorldLabel = findViewById(R.id.textTime);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -320,6 +331,7 @@ public class MainActivity extends AppCompatActivity
 
                                 }
                                 markersAdded=true;
+                                hideProgressView();
                             }
 
                             Frame frame = arSceneView.getArFrame();
@@ -335,13 +347,13 @@ public class MainActivity extends AppCompatActivity
                                 locationScene.processFrame(frame);
                             }
 
-                            if (loadingMessageSnackbar != null) {
-                                for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
-                                    if (plane.getTrackingState() == TrackingState.TRACKING) {
-                                        hideLoadingMessage();
-                                    }
-                                }
-                            }
+//                            if (loadingMessageSnackbar != null) {
+//                                for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
+//                                    if (plane.getTrackingState() == TrackingState.TRACKING) {
+//                                        hideLoadingMessage();
+//                                    }
+//                                }
+//                            }
                         });
 
 
@@ -614,9 +626,9 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        if (arSceneView.getSession() != null) {
-            showLoadingMessage();
-        }
+//        if (arSceneView.getSession() != null) {
+//            showLoadingMessage();
+//        }
     }
 
     /**
@@ -684,7 +696,7 @@ public class MainActivity extends AppCompatActivity
 
         loadingMessageSnackbar =
                 Snackbar.make(
-                        MainActivity.this.findViewById(R.id.coordinator),
+                        coordinatorLayout,
                         R.string.plane_finding,
                         Snackbar.LENGTH_INDEFINITE);
         loadingMessageSnackbar.getView().setBackgroundColor(0xbf323232);
@@ -702,6 +714,7 @@ public class MainActivity extends AppCompatActivity
 
     private void handleCompleteableFutures()
     {
+        showProgressView("Rendering nodes ...");
         CompletableFuture.allOf(exampleLayouts.toArray(new CompletableFuture[exampleLayouts.size()]))
                 .handle(
                         (notUsed, throwable) -> {
@@ -919,5 +932,26 @@ public class MainActivity extends AppCompatActivity
             setTime(newVal, true);
             Log.d(TAG, "Value changed " +newVal);
         }
+    }
+
+    private void showProgressView(String message) {
+        if (progressViewSnackbar != null && progressViewSnackbar.isShownOrQueued()) {
+            progressViewSnackbar.setText(message);
+            return;
+        }
+        progressViewSnackbar = Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_INDEFINITE);
+        ViewGroup contentLay = (ViewGroup) progressViewSnackbar.getView().findViewById(com.google.android.material.R.id.snackbar_text).getParent();
+        ProgressBar item = new ProgressBar(contentLay.getContext());
+        contentLay.addView(item,0);
+
+        progressViewSnackbar.show();
+        Log.d(TAG, "Showing progress view");
+    }
+
+    private void hideProgressView() {
+        if(progressViewSnackbar != null) {
+            progressViewSnackbar.dismiss();
+        }
+        Log.d(TAG, "Hiding progress view");
     }
 }
