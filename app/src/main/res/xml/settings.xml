@@ -4,14 +4,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <SwitchPreferenceCompat
-        app:key="useImperialUnits"
+        app:key="@string/settings_key_useImperialUnits"
         app:title="Use imperial units"
         app:summary="Show temperature and pressure in imperial units"
         app:icon="@drawable/scale_balance"
         app:defaultValue="false"/>
 
     <SeekBarPreference
-        app:key="distanceThreshold"
+        app:key="@string/settings_key_distanceThreshold"
         app:title="Nearby nodes maximum distance"
         app:summary="How far off nodes to display (in meters)"
         app:min="100"

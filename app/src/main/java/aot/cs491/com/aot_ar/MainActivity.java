@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -270,8 +271,8 @@ public class MainActivity extends AppCompatActivity
         timePicker.setValue(calendar.get(Calendar.HOUR_OF_DAY));
         isInitial = false;
 
-        distance = PreferenceManager.getDefaultSharedPreferences(this).getInt("distanceThreshold", 2000);
-        useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useImperialUnits", false);
+        distance = PreferenceManager.getDefaultSharedPreferences(this).getInt(getResources().getString(R.string.settings_key_distanceThreshold), 2000);
+        useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(getResources().getString(R.string.settings_key_useImperialUnits), false);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -294,7 +295,7 @@ public class MainActivity extends AppCompatActivity
                             if (!hasFinishedLoading) {
                                 return;
                             }
-                            Log.i(TAG, "Finished loading models.");
+
                             if (locationScene == null) {
                                 // If our locationScene object hasn't been setup yet, this is a good time to do it
                                 // We know that here, the AR components have been initiated.
@@ -672,6 +673,27 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
+        Integer newDistance = PreferenceManager.getDefaultSharedPreferences(this).getInt(getResources().getString(R.string.settings_key_distanceThreshold), 2000);
+        boolean distanceChanged = newDistance != distance;
+
+        Boolean newUseImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(getResources().getString(R.string.settings_key_useImperialUnits), false);
+        boolean unitsChanged = newUseImperialUnits != useImperialUnits;
+
+        distance = newDistance;
+        useImperialUnits = newUseImperialUnits;
+
+//        final Handler handler = new Handler();
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+                if (distanceChanged) {
+                    refresh();
+                } else if (unitsChanged) {
+                    setTime(timePicker.getValue(), true);
+                }
+//            }
+//        }, 1000);
+
 //        if (arSceneView.getSession() != null) {
 //            showLoadingMessage();
 //        }
@@ -983,23 +1005,28 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showProgressView(String message) {
-        if (progressViewSnackbar != null && progressViewSnackbar.isShownOrQueued()) {
-            progressViewSnackbar.setText(message);
-            return;
+        if(progressViewSnackbar == null) {
+            coordinatorLayout = findViewById(R.id.coordinator);
+            progressViewSnackbar = Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_INDEFINITE);
+            ViewGroup contentLay = (ViewGroup) progressViewSnackbar.getView().findViewById(com.google.android.material.R.id.snackbar_text).getParent();
+            ProgressBar item = new ProgressBar(contentLay.getContext());
+            contentLay.addView(item,0);
         }
-        progressViewSnackbar = Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_INDEFINITE);
-        ViewGroup contentLay = (ViewGroup) progressViewSnackbar.getView().findViewById(com.google.android.material.R.id.snackbar_text).getParent();
-        ProgressBar item = new ProgressBar(contentLay.getContext());
-        contentLay.addView(item,0);
+        else {
+            progressViewSnackbar.setText(message);
+        }
 
-        progressViewSnackbar.show();
-        Log.d(TAG, "Showing progress view");
+        if (!progressViewSnackbar.isShownOrQueued()) {
+            progressViewSnackbar.show();
+            Log.d(TAG, "Showing progress view");
+        }
     }
 
     private void hideProgressView() {
-        if(progressViewSnackbar != null) {
+        if(progressViewSnackbar != null && progressViewSnackbar.isShownOrQueued()) {
             progressViewSnackbar.dismiss();
+            progressViewSnackbar = null;
+            Log.d(TAG, "Hiding progress view");
         }
-        Log.d(TAG, "Hiding progress view");
     }
 }
