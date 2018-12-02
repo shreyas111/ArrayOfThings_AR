@@ -27,7 +27,7 @@ public class Utils {
     }
 
     public static String buildDateString(int year, int month, int day, int hours, int minutes, int seconds) {
-        return new StringBuilder(String.valueOf(year))
+        return new StringBuilder()
                 .append(year)
                 .append('-')
                 .append(month)

@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/linearLayout3"
     android:layout_width="175dp"
-    android:layout_height="175dp">
-    <!--android:background="#edbcaf">-->
+    android:layout_height="175dp"
+    android:background="#edbcaf">
 
     <TextView
         android:id="@+id/textView_loc1"
@@ -20,6 +20,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        style="@style/TextShadow"
         tools:textColor="@color/black" />
 
     <TextView
@@ -33,7 +34,8 @@
         android:textSize="10sp"
         app:layout_constraintEnd_toStartOf="@+id/textView_D"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        style="@style/TextShadow" />
 
     <TextView
         android:id="@+id/textView_D"
@@ -46,7 +48,8 @@
         android:textSize="10sp"
         app:layout_constraintEnd_toStartOf="@+id/textView_P"
         app:layout_constraintStart_toEndOf="@+id/textView_T"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        style="@style/TextShadow" />
 
     <TextView
         android:id="@+id/textView_P"
@@ -59,7 +62,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.551"
         app:layout_constraintStart_toEndOf="@+id/textView_D"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        style="@style/TextShadow" />
 
     <TextView
         android:id="@+id/textView_temp"
@@ -72,6 +76,7 @@
         android:gravity="center"
         android:textSize="7sp"
         tools:textColor="@color/black"
+        style="@style/TextShadow"
         app:layout_constraintEnd_toStartOf="@+id/textView_dist1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView_T" />
@@ -87,6 +92,7 @@
         android:textSize="7sp"
         android:gravity="center"
         tools:textColor="@color/black"
+        style="@style/TextShadow"
         app:layout_constraintEnd_toStartOf="@+id/textView_pres"
         app:layout_constraintStart_toEndOf="@+id/textView_temp"
         app:layout_constraintTop_toBottomOf="@+id/textView_D" />
@@ -101,6 +107,7 @@
         android:background="@drawable/circle"
         android:gravity="center"
         tools:textColor="@color/black"
+        style="@style/TextShadow"
         android:textSize="7sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView_dist1"
@@ -115,6 +122,7 @@
         android:layout_marginTop="8dp"
         android:background="@drawable/humidity"
         android:textSize="10sp"
+        style="@style/TextShadow"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView_dist1" />
@@ -129,6 +137,7 @@
         android:background="@drawable/circle"
         android:gravity="center"
         android:textSize="7sp"
+        style="@style/TextShadow"
         tools:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

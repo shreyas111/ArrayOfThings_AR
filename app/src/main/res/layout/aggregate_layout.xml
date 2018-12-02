@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:id="@+id/aggregateLayoutLinear"
+    android:orientation="horizontal"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:background="#edbcaf">
+
+    <TextView
+        android:id="@+id/textView_min"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="2dp"
+        android:text="Min"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/textView_minVal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="2dp"
+        android:background="@drawable/circle"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/textView_med"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="2dp"
+        android:text="Med"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/textView_medVal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="2dp"
+        android:background="@drawable/circle"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/textView_max"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="2dp"
+        android:text="Max"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/textView_maxVal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="2dp"
+        android:background="@drawable/circle"
+        android:textSize="16sp" />
+
+</LinearLayout>

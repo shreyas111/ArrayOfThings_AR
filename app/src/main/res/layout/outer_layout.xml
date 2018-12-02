@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="350dp"
+    android:layout_height="450dp"
     android:id="@+id/outerLinerLinear">
 
 <LinearLayout
@@ -19,6 +19,13 @@
         android:layout_gravity="center"
         android:gravity="center">
         <include android:id="@+id/inner_layout_id" layout="@layout/inner_layout" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:gravity="center">
+        <include android:id="@+id/aggregate_layout_id" layout="@layout/aggregate_layout" />
     </LinearLayout>
 
 </LinearLayout>

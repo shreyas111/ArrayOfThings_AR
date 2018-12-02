@@ -31,7 +31,7 @@ public class LocationMarker {
     private int onlyRenderWhenWithin = Integer.MAX_VALUE;
     private ScalingMode scalingMode = ScalingMode.FIXED_SIZE_ON_SCREEN;
     private float gradualScalingMinScale = 0.8F;
-    private float gradualScalingMaxScale = 1F;
+    private float gradualScalingMaxScale = 1.4F;
 
     public LocationMarker(double longitude, double latitude, Node node) {
         this.longitude = longitude;

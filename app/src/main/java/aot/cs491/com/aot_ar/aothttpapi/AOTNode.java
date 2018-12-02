@@ -4,7 +4,9 @@ import com.github.filosganga.geogson.model.Point;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class AOTNode {
@@ -17,6 +19,7 @@ public class AOTNode {
 
     private Set<AOTSensor> sensors;
     private List<AOTObservation> observations;
+    private Map<AOTSensorType, AOTObservation> aggregatedObservations = new HashMap<>();
 
     public AOTNode() {
     }
@@ -111,6 +114,10 @@ public class AOTNode {
 
     public void setObservations(List<AOTObservation> observations) {
         this.observations = observations;
+    }
+
+    public Map<AOTSensorType, AOTObservation> getAggregatedObservations() {
+        return aggregatedObservations;
     }
 
     public static List<AOTNode> fromVsns(List<String> vsns) {

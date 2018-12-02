@@ -100,7 +100,11 @@ public class AOTService {
                 .flatMap(node -> Observable.create(emitter -> {
                             List<Observable<List<AOTObservation>>> calls = new ArrayList<>();
                             for (int i = 1; i <= pages; i++) {
-                                calls.add(fetchObservations(Arrays.asList(new AOTNode[]{node}), null, startDate, i, pageSize).toObservable());
+                                List<AOTSensor> sensors = new ArrayList<>();
+                                for(AOTSensorType sensorType: AOTSensorType.values()) {
+                                    sensors.add(new AOTSensor(sensorType.toString()));
+                                }
+                                calls.add(fetchObservations(Arrays.asList(new AOTNode[]{node}), sensors, startDate, i, pageSize).toObservable());
                             }
 
                             DisposablesManager.add(

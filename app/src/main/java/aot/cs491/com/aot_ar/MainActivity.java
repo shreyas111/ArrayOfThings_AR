@@ -1,8 +1,5 @@
 package aot.cs491.com.aot_ar;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import android.location.Location;
-
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -20,6 +17,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -59,7 +57,7 @@ import aot.cs491.com.aot_ar.aothttpapi.AOTSensorType;
 import aot.cs491.com.aot_ar.aothttpapi.AOTService;
 import aot.cs491.com.aot_ar.utils.DisposablesManager;
 import aot.cs491.com.aot_ar.utils.Utils;
-import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -77,7 +75,7 @@ public class MainActivity extends AppCompatActivity
     private FusedLocationProviderClient mFusedLocationClient;
     Location loc;
 
-
+    String menuOptionSelected;
     double longitude;
     double latitude;
     int distance;
@@ -136,22 +134,30 @@ public class MainActivity extends AppCompatActivity
                                         Log.i(TAG, "node has: " + node.getObservations().size() + " observations from " + node.getSensors().size() + " sensors");
 
                                         if (!node.getObservations().isEmpty()) {
+                                            List<Observable<List<AOTObservation>>> filterCalls = new ArrayList<>();
+                                            for(AOTSensorType aSensorType: AOTSensorType.values()) {
+                                                filterCalls.add(AOTService.filterObservations(node.getObservations(), aSensorType, filterStartDate, filterEndDate).toObservable());
+                                            }
                                             DisposablesManager.add(
-                                                    AOTService.filterObservations(node.getObservations(), sensorType, filterStartDate, filterEndDate)
-                                                            .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "avg"))
-                                                            .subscribe(aotObservation -> {
-                                                                        helloWorldLabel.setText("\nNode: " + node.toString());
-                                                                        if(aotObservation.getSensorPath() != null) {
-                                                                            helloWorldLabel.append("\n" + sensorType.name() + ": " + aotObservation.getValue(useImperialUnits) +" " +aotObservation.getUnits(useImperialUnits));
-                                                                        }
-                                                                        else {
-                                                                            helloWorldLabel.append("\n" + sensorType.name() + ": No data available");
-                                                                        }
-                                                                        helloWorldLabel.append("\n");
-                                                                    },
-                                                                    throwable -> Log.e(TAG, "Error while filtering/aggregating observations:", throwable)
-                                                            )
-                                            );
+                                                    Observable.fromIterable(filterCalls)
+                                                            .flatMap(listSingle -> listSingle)
+                                                            .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "avg").toObservable())
+//                                                            .subscribe(aotObservations -> {
+//                                                                DisposablesManager.add(
+//                                                                    AOTService.aggregateObservations(aotObservations, "avg")
+                                                                            .subscribe(aotObservation -> {
+                                                                                if(aotObservation.getSensorPath() != null) {
+                                                                                    node.getAggregatedObservations().put(aotObservation.getSensorType(), aotObservation);
+                                                                                }
+                                                                                else {
+                                                                                    node.getAggregatedObservations().put(aotObservation.getSensorType(), null);
+                                                                                }
+                                                                            },
+                                                                            throwable -> Log.e(TAG, "Error while filtering/aggregating observations:", throwable)
+                                                                    )
+                                                                );
+//                                                            })
+//                                            );
                                         }
                                     }
                                     else {
@@ -217,18 +223,20 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         arSceneView = findViewById(R.id.ar_scene_view);
+        menuOptionSelected="weather";
 
         helloWorldLabel = findViewById(R.id.textTime);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         Calendar calendar = Calendar.getInstance();
-        apiStartDate = Utils.stripTimeFromLocalDate(calendar.getTime());
-        apiEndDate = Utils.stringToLocalDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH));
+//        apiStartDate = Utils.stripTimeFromLocalDate(calendar.getTime());
+        apiStartDate = Utils.stripTimeFromLocalDate(Utils.stringToLocalDate(2018, 11, 30));
+        apiEndDate = calendar.getTime();
         distance = PreferenceManager.getDefaultSharedPreferences(this).getInt("distanceThreshold", 2000);
         useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useImperialUnits", false);
 
         sensorType = AOTSensorType.TEMPERATURE;
-        filterStartDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 7, calendar.getTime());
-        filterEndDate = Utils.setHoursForLocalDate(calendar.get(Calendar.HOUR_OF_DAY) - 5, calendar.getTime());
+        filterStartDate = Utils.setHoursForLocalDate(15, apiStartDate);
+        filterEndDate = Utils.setHoursForLocalDate(16, apiStartDate);
         distanceRefreshed(distance);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -308,7 +316,9 @@ public class MainActivity extends AppCompatActivity
 
                                 for(int i=0; i<nodes.size(); i++)
                                 {
-                                    setRenderEvent(locationMarkers.get(i), exampleLayoutRenderables.get(i), nodes.get(i));
+                                    setRenderEvent(locationMarkers.get(i), exampleLayoutRenderables.get(i), nodes.get(i),i);
+                                    setInnerLayoutValues(exampleLayoutRenderables.get(i), nodes.get(i),i);
+
                                 }
 
                                 // Adding the marker
@@ -401,10 +411,28 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_light) {
+            Log.i("MainActivity:: MEnu","Light Selected");
+//            menuOptionSelected="light";
+//            if(locationScene!=null)
+//            {
+//                setInnerLayoutValuesFromMenu();
+//            }
 
         } else if (id == R.id.nav_pollution) {
+            Log.i("MainActivity:: MEnu","Pollution Selected");
+//            menuOptionSelected="airquality";
+//            if(locationScene!=null)
+//            {
+//                setInnerLayoutValuesFromMenu();
+//            }
 
         } else if (id == R.id.nav_weather) {
+//            menuOptionSelected="weather";
+            Log.i("MainActivity:: MEnu","Weather Selected");
+//            if(locationScene!=null)
+//            {
+//                setInnerLayoutValuesFromMenu();
+//            }
 
         }
 
@@ -785,21 +813,18 @@ public class MainActivity extends AppCompatActivity
         );
     }
 
-    public void setRenderEvent(LocationMarker lm, ViewRenderable vr, AOTNode aotN)
-    {
+    public void setRenderEvent(LocationMarker lm, ViewRenderable vr, AOTNode aotN, int i) {
         lm.setRenderEvent(new LocationNodeRender() {
             @Override
             public void render(LocationNode node) {
-                //View eView = exampleLayoutRenderables.get(0).getView();
                 View eView = vr.getView();
-                TextView distanceTextView = eView.findViewById(R.id.textView_dist1);
-                TextView nameView = eView.findViewById(R.id.textView_loc1);
-                distanceTextView.setText(node.getDistance() + "M");
-                nameView.setText(aotN.getAddress());
+                TextView value2 = eView.findViewById(R.id.textView_dist1);
+                value2.setText(node.getDistance() + "M");
 
             }
         });
     }
+
 
     public void setRenderEventCustom(LocationMarkerCustom lm, ViewRenderable vr)
     {
@@ -815,4 +840,86 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
+
+    public void setInnerLayoutValues(ViewRenderable vr, AOTNode aotN, int i)
+    {
+        View eView = vr.getView();
+        TextView nameView = eView.findViewById(R.id.textView_loc1);
+        TextView value1 = eView.findViewById(R.id.textView_temp);
+        TextView value3 = eView.findViewById(R.id.textView_pres);
+        TextView value4 = eView.findViewById(R.id.textView_hum);
+        nameView.setText(aotN.getAddress());
+        AOTObservation observation;
+        if(menuOptionSelected=="weather") {
+
+            observation = aotN.getAggregatedObservations().get(AOTSensorType.TEMPERATURE);
+            if(observation !=null)
+                value1.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
+            else
+                value1.setText("NF");
+
+            observation = aotN.getAggregatedObservations().get(AOTSensorType.PRESSURE);
+            if(observation !=null)
+                value3.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
+            else
+                value3.setText("NF");
+
+            observation = aotN.getAggregatedObservations().get(AOTSensorType.HUMIDITY);
+            if(observation !=null)
+                value4.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
+            else
+                value4.setText("NF");
+
+        }
+        if(menuOptionSelected=="light") {
+
+            observation = aotN.getAggregatedObservations().get(AOTSensorType.LIGHT_INTENSITY);
+            if(observation !=null)
+                value1.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
+            else
+                value1.setText("NF");
+
+            observation = aotN.getAggregatedObservations().get(AOTSensorType.INFRA_RED_LIGHT);
+            if(observation !=null)
+                value3.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
+            else
+                value3.setText("NF");
+
+            observation = aotN.getAggregatedObservations().get(AOTSensorType.ULTRA_VIOLET_LIGHT);
+            if(observation !=null)
+                value4.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
+            else
+                value4.setText("NF");
+
+        }
+        if(menuOptionSelected=="airquality") {
+
+            observation = aotN.getAggregatedObservations().get(AOTSensorType.CARBON_MONOXIDE);
+            if(observation !=null)
+                value1.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
+            else
+                value1.setText("NF");
+
+            observation = aotN.getAggregatedObservations().get(AOTSensorType.SULPHUR_DIOXIDE);
+            if(observation !=null)
+                value3.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
+            else
+                value3.setText("NF");
+
+            observation = aotN.getAggregatedObservations().get(AOTSensorType.NITROGEN_DIOXIDE);
+            if(observation !=null)
+                value4.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
+            else
+                value4.setText("NF");
+        }
+    }
+    public void setInnerLayoutValuesFromMenu()
+    {
+        for(int i=0; i<nodes.size(); i++)
+        {
+            setInnerLayoutValues(exampleLayoutRenderables.get(i), nodes.get(i),i);
+        }
+    }
+
+
 }

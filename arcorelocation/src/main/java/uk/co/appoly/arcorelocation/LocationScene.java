@@ -39,7 +39,7 @@ public class LocationScene {
     private int distanceLimit = 20;
     private boolean offsetOverlapping = false;
     // Bearing adjustment. Can be set to calibrate with true north
-    private int bearingAdjustment = 0;
+    private int bearingAdjustment = 4;
     private String TAG = "LocationScene";
     private boolean anchorsNeedRefresh = true;
     private boolean minimalRefreshing = false;
