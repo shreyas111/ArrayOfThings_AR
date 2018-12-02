@@ -1,7 +1,6 @@
 package aot.cs491.com.aot_ar;
 
 import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -15,7 +14,6 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -61,7 +59,6 @@ import aot.cs491.com.aot_ar.aothttpapi.AOTService;
 import aot.cs491.com.aot_ar.utils.DisposablesManager;
 import aot.cs491.com.aot_ar.utils.Utils;
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import uk.co.appoly.arcorelocation.LocationMarker;
@@ -96,6 +93,7 @@ public class MainActivity extends AppCompatActivity
     NumberPicker timePicker;
     FloatingActionButton refreshButton;
 
+    private boolean isInitial = true;
     private boolean isTimePickerScrolling = false;
     private boolean installRequested;
     private boolean hasFinishedLoading = false;
@@ -241,9 +239,7 @@ public class MainActivity extends AppCompatActivity
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         refreshButton = findViewById(R.id.refreshButton);
-        refreshButton.setOnClickListener(v -> {
-            initializeAndCallAPI();
-        });
+        refreshButton.setOnClickListener(v -> refresh());
 
         // Initialize date picker
         Calendar calendar = Calendar.getInstance();
@@ -253,8 +249,13 @@ public class MainActivity extends AppCompatActivity
         datePickerDialog.getDatePicker().setMinDate(Utils.stringToLocalDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).getTime());
         dateButton = findViewById(R.id.dateButton);
         dateButton.setOnClickListener(v -> {
-            datePickerDialog.getDatePicker().setMaxDate(calendar.getTimeInMillis());
-            datePickerDialog.show();
+            if(markersAdded) {
+                datePickerDialog.getDatePicker().setMaxDate(calendar.getTimeInMillis());
+                datePickerDialog.show();
+            }
+            else {
+                refresh();
+            }
         });
         timePicker = findViewById(R.id.timePicker);
         timePicker.setOnValueChangedListener(this);
@@ -262,13 +263,12 @@ public class MainActivity extends AppCompatActivity
 
         // Set default date and time
         onDateSet(datePickerDialog.getDatePicker(), calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-        setTime(calendar.get(Calendar.HOUR_OF_DAY));
+        setTime(calendar.get(Calendar.HOUR_OF_DAY), false);
         timePicker.setValue(calendar.get(Calendar.HOUR_OF_DAY));
+        isInitial = false;
 
         distance = PreferenceManager.getDefaultSharedPreferences(this).getInt("distanceThreshold", 2000);
         useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useImperialUnits", false);
-
-        distanceRefreshed(distance);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -864,45 +864,47 @@ public class MainActivity extends AppCompatActivity
         apiStartDate = Utils.stringToLocalDate(year, month + 1, dayOfMonth);
         apiEndDate = Utils.setTimeForLocalDate(23, 59, 59, apiStartDate);
         dateButton.setText(Utils.dateToString(apiStartDate, "EEE, MMM d, ''yy", TimeZone.getDefault()));
-        onValueChange(timePicker,0,timePicker.getValue());
+        setTime(timePicker.getValue(), false);
 
-        if(markersAdded) {
+        if(!isInitial) {
+            refresh();
+        }
+    }
+
+    private void refresh() {
+        if (markersAdded) {
             locationScene.clearMarkers();
             distanceRefreshed();
-        }
-        else
-        {
+        } else {
             Toast.makeText(
                     this, "Models Not Loaded. Please wait to fetch new data.", Toast.LENGTH_LONG)
                     .show();
         }
     }
 
-    private void setTime(int hour) {
+    private void setTime(int hour, boolean shouldRefresh) {
         filterStartDate = Utils.setTimeForLocalDate(hour, 0, 0, apiStartDate);
         filterEndDate = Utils.setTimeForLocalDate(hour, 59, 59, apiStartDate);
-        if(markersAdded)
-        {
-            for(AOTNode node : nodes) {
-                filterAndAggregateObservations(node);
+        if(shouldRefresh) {
+            if (markersAdded) {
+                for (AOTNode node : nodes) {
+                    filterAndAggregateObservations(node);
+                }
+                for (int i = 0; i < nodes.size(); i++) {
+                    setInnerLayoutValues(exampleLayoutRenderables.get(i), nodes.get(i), i);
+                }
+            } else {
+                Toast.makeText(
+                        this, "Models Not Loaded.", Toast.LENGTH_LONG)
+                        .show();
             }
-            for(int i=0; i<nodes.size(); i++)
-            {
-                setInnerLayoutValues(exampleLayoutRenderables.get(i), nodes.get(i),i);
-            }
-        }
-        else
-        {
-            Toast.makeText(
-                    this, "Models Not Loaded.", Toast.LENGTH_LONG)
-                    .show();
         }
     }
 
     @Override
     public void onScrollStateChange(NumberPicker view, int scrollState) {
         if(scrollState == NumberPicker.OnScrollListener.SCROLL_STATE_IDLE) {
-            setTime(view.getValue());
+            setTime(view.getValue(), true);
             isTimePickerScrolling = false;
             Log.d(TAG, "State changed " + view.getValue());
         }
@@ -914,7 +916,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
         if(!isTimePickerScrolling) {
-            setTime(newVal);
+            setTime(newVal, true);
             Log.d(TAG, "Value changed " +newVal);
         }
     }

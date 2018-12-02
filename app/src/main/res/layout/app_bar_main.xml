@@ -36,7 +36,6 @@
                 android:drawableTint="?android:textColorPrimary"
                 android:drawableTintMode="src_atop"
                 android:drawablePadding="8dp"
-                android:padding="16dp"
                 android:text="Date" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
