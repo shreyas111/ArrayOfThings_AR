@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -35,6 +36,9 @@ import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 import com.shawnlin.numberpicker.NumberPicker;
 
 import java.util.ArrayList;
@@ -127,7 +131,7 @@ public class MainActivity extends AppCompatActivity
 
                                     exampleLayouts.add(
                                             ViewRenderable.builder()
-                                                    .setView(this,R.layout.inner_layout)
+                                                    .setView(this,R.layout.outer_layout)
                                                     .build());
 
                                     if (node.getObservations() != null) {
@@ -274,7 +278,7 @@ public class MainActivity extends AppCompatActivity
 //                                    locationMarkersCustom.add(createLocationMarkerCustom(nodes.get(i).getLocation().lon(),
 //                                            nodes.get(i).getLocation().lat(), exampleLayoutRenderables.get(i),nodes.get(i)));
                                     locationMarkers.add(createLocationMarker(nodes.get(i).getLocation().lon(),
-                                            nodes.get(i).getLocation().lat(), exampleLayoutRenderables.get(i)));
+                                            nodes.get(i).getLocation().lat(), i));
                                 }
 
                                 for(int i=0; i<nodes.size(); i++)
@@ -373,21 +377,7 @@ public class MainActivity extends AppCompatActivity
      *
      * @return
      */
-    private Node getExampleView() {
-        Node base = new Node();
-        base.setRenderable(exampleLayoutRenderable);
-        Context c = this;
-        // Add  listeners etc here
-        View eView = exampleLayoutRenderable.getView();
-        eView.setOnTouchListener((v, event) -> {
-            Toast.makeText(
-                    c, "Location marker touched.", Toast.LENGTH_LONG)
-                    .show();
-            return false;
-        });
 
-        return base;
-    }
     private Node getExampleView1(ViewRenderable vr) {
         Node base = new Node();
         base.setRenderable(vr);
@@ -410,15 +400,164 @@ public class MainActivity extends AppCompatActivity
         Context c = this;
         // Add  listeners etc here
         View eView = exampleLayoutRenderables.get(i).getView();
-        eView.setOnTouchListener((v, event) -> {
+        TextView textViewData1 = eView.findViewById(R.id.textView_temp);
+        TextView textViewData2 = eView.findViewById(R.id.textView_pres);
+        TextView textViewData3 = eView.findViewById(R.id.textView_hum);
+        //View compLayout = findViewById(R.id.comp_layout_id);
+        //TextView compLayoutText1 = compLayout.findViewById(R.id.comptext1);
+
+
+        eView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                // TODO Auto-generated method stub
+                //compLayout.setVisibility(LinearLayout.VISIBLE);
+                for(int i=0; i<nodes.size();i++)
+                {
+                    View eView = exampleLayoutRenderables.get(i).getView();
+                    View vgraph= eView.findViewById(R.id.graph_layout_id);
+                    vgraph.setVisibility(LinearLayout.GONE);
+
+                }
+                v.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.VISIBLE);
+                GraphView graph = (GraphView) v.findViewById(R.id.graph1);
+                graph.removeAllSeries();
+                LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[]{
+                        new DataPoint(0, 1),
+                        new DataPoint(1, 5),
+                        new DataPoint(2, 3),
+                        new DataPoint(3, 5),
+                        new DataPoint(4, 17),
+                        new DataPoint(5, 5),
+                        new DataPoint(6, 5),
+                        new DataPoint(7, 23),
+                        new DataPoint(8, 18),
+                        new DataPoint(9, 5),
+                        new DataPoint(10, 5),
+                        new DataPoint(11, 7),
+                        new DataPoint(12, 13),
+                        new DataPoint(13, 5),
+                        new DataPoint(14, 3),
+                        new DataPoint(15, 23),
+                        new DataPoint(16, 5),
+                        new DataPoint(17, 2),
+                        new DataPoint(18, 5),
+                        new DataPoint(19, 2),
+                        new DataPoint(20, 2),
+                        new DataPoint(21, 5),
+                        new DataPoint(22, 4),
+                        new DataPoint(23, 6),
+                });
+                graph.addSeries(series);
+
+
+                //compLayoutText1.setText(nodes.get(i).getAddress());
+                //locationScene.clearMarkers();
+                //locationScene = null;
+                //hasFinishedLoading = false;
+                //distanceRefreshed(2000);
+
+                Toast.makeText(
+                        c, "Location Marker Long Pressed.", Toast.LENGTH_LONG)
+                        .show();
+                return false;
+            }
+        });
+
+        textViewData1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinearLayout l=(LinearLayout) v.getParent().getParent().getParent();
+                l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.VISIBLE);
+                GraphView graph = (GraphView) l.findViewById(R.id.graph1);
+                graph.removeAllSeries();
+                LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[]{
+                        new DataPoint(0, 1),
+                        new DataPoint(1, 5),
+                        new DataPoint(2, 3),
+                        new DataPoint(3, 5),
+                        new DataPoint(4, 17),
+                        new DataPoint(5, 5),
+                        new DataPoint(6, 5),
+                        new DataPoint(7, 23),
+                        new DataPoint(8, 18),
+                        new DataPoint(9, 5),
+                        new DataPoint(10, 5),
+                        new DataPoint(11, 7),
+                        new DataPoint(12, 13),
+                        new DataPoint(13, 5),
+                        new DataPoint(14, 3),
+                        new DataPoint(15, 23),
+                        new DataPoint(16, 5),
+                        new DataPoint(17, 2),
+                        new DataPoint(18, 5),
+                        new DataPoint(19, 34),
+                        new DataPoint(20, 2),
+                        new DataPoint(21, 5),
+                        new DataPoint(22, 4),
+                        new DataPoint(23, 6),
+                });
+                graph.addSeries(series);
+
+                Toast.makeText(
+                    c, "Temp marker touched.", Toast.LENGTH_LONG)
+                    .show();
+                 return ;
+            }
+        });
+//        textViewData1.setOnTouchListener((v, event) -> {
+//
+//            v.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.VISIBLE);
+//            GraphView graph = (GraphView) v.findViewById(R.id.graph1);
+//            LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[]{
+//                    new DataPoint(0, 1),
+//                    new DataPoint(1, 5),
+//                    new DataPoint(2, 3),
+//                    new DataPoint(3, 5),
+//                    new DataPoint(4, 17),
+//                    new DataPoint(5, 5),
+//                    new DataPoint(6, 5),
+//                    new DataPoint(7, 22),
+//                    new DataPoint(8, 14),
+//                    new DataPoint(9, 5),
+//                    new DataPoint(10, 9),
+//                    new DataPoint(11, 12),
+//                    new DataPoint(12, 13),
+//                    new DataPoint(13, 5),
+//                    new DataPoint(14, 3),
+//                    new DataPoint(15, 2),
+//                    new DataPoint(16, 5),
+//                    new DataPoint(17, 2),
+//                    new DataPoint(18, 5),
+//                    new DataPoint(19, 34),
+//                    new DataPoint(20, 2),
+//                    new DataPoint(21, 5),
+//                    new DataPoint(22, 4),
+//                    new DataPoint(23, 62),
+//            });
+//            graph.addSeries(series);
+//            Toast.makeText(
+//                    c, "Temp marker touched.", Toast.LENGTH_LONG)
+//                    .show();
+//            return false;
+//        });
+
+        textViewData2.setOnTouchListener((v, event) -> {
             Toast.makeText(
-                    c, "Location marker touched.", Toast.LENGTH_LONG)
+                    c, "Pres marker touched.", Toast.LENGTH_LONG)
+                    .show();
+            return false;
+        });
+        textViewData3.setOnTouchListener((v, event) -> {
+            Toast.makeText(
+                    c, "Hum marker touched.", Toast.LENGTH_LONG)
                     .show();
             return false;
         });
 
         return base;
     }
+
 
     /***
      * Example Node of a 3D model
@@ -585,12 +724,14 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    public LocationMarker createLocationMarker(double longitude, double latitude, ViewRenderable vr )
+
+    public LocationMarker createLocationMarker(double longitude, double latitude, int i)
     {
         return new LocationMarker(
                 longitude,
                 latitude,
-                getExampleView1(vr)
+                getExampleView(i)
+                //getExampleView1(vr)
         );
     }
 
