@@ -1,7 +1,6 @@
 package aot.cs491.com.aot_ar;
 
 import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -10,12 +9,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -51,6 +51,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.preference.PreferenceManager;
@@ -61,7 +62,6 @@ import aot.cs491.com.aot_ar.aothttpapi.AOTService;
 import aot.cs491.com.aot_ar.utils.DisposablesManager;
 import aot.cs491.com.aot_ar.utils.Utils;
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import uk.co.appoly.arcorelocation.LocationMarker;
@@ -71,7 +71,7 @@ import uk.co.appoly.arcorelocation.rendering.LocationNodeRender;
 import uk.co.appoly.arcorelocation.utils.ARLocationPermissionHelper;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, DatePickerDialog.OnDateSetListener, NumberPicker.OnValueChangeListener
+        implements NavigationView.OnNavigationItemSelectedListener, DatePickerDialog.OnDateSetListener, NumberPicker.OnValueChangeListener, NumberPicker.OnScrollListener
 {
 
     int count1 =0;
@@ -91,15 +91,20 @@ public class MainActivity extends AppCompatActivity
 
     static final int DIALOG_ID = 0;
 
+    CoordinatorLayout coordinatorLayout;
     Button dateButton;
     DatePickerDialog datePickerDialog;
     NumberPicker timePicker;
+    FloatingActionButton refreshButton;
 
+    private boolean isInitial = true;
+    private boolean isTimePickerScrolling = false;
     private boolean installRequested;
     private boolean hasFinishedLoading = false;
     private boolean markersAdded=false;
 
     private Snackbar loadingMessageSnackbar = null;
+    private Snackbar progressViewSnackbar;
     private ArSceneView arSceneView;
     // Renderables for this example
     CompletableFuture<ViewRenderable> exampleLayout;
@@ -120,6 +125,7 @@ public class MainActivity extends AppCompatActivity
 
     public void initializeAndCallAPI()
     {
+        showProgressView("Finding nearby nodes ...");
         DisposablesManager.add(
                 AOTService.fetchObservationsFromNearbyNodes(longitude, latitude, distance, apiStartDate, apiEndDate)
                         .subscribeOn(Schedulers.io())
@@ -148,7 +154,10 @@ public class MainActivity extends AppCompatActivity
                                     }
                                     helloWorldLabel.append("\n");
                                 },
-                                throwable -> Log.e(TAG, "Error while fetching nearby nodes:", throwable),
+                                throwable -> {
+                                    Log.e(TAG, "Error while fetching nearby nodes:", throwable);
+                                    hideProgressView();
+                                },
                                 () -> {
                                     Log.i(TAG, "Finished fetching nearby nodes");
                                     handleCompleteableFutures();
@@ -186,7 +195,7 @@ public class MainActivity extends AppCompatActivity
 
     public void distanceRefreshed()
     {
-
+        showProgressView("Determining your location ...");
         nodes = new ArrayList<>();
         exampleLayouts = new ArrayList<>();
         exampleLayoutRenderables = new ArrayList<ViewRenderable>();
@@ -235,8 +244,13 @@ public class MainActivity extends AppCompatActivity
         arSceneView = findViewById(R.id.ar_scene_view);
         menuOptionSelected="weather";
 
+        coordinatorLayout = findViewById(R.id.coordinator);
+
         helloWorldLabel = findViewById(R.id.textTime);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        refreshButton = findViewById(R.id.refreshButton);
+        refreshButton.setOnClickListener(v -> refresh());
 
         // Initialize date picker
         Calendar calendar = Calendar.getInstance();
@@ -246,23 +260,26 @@ public class MainActivity extends AppCompatActivity
         datePickerDialog.getDatePicker().setMinDate(Utils.stringToLocalDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).getTime());
         dateButton = findViewById(R.id.dateButton);
         dateButton.setOnClickListener(v -> {
-            datePickerDialog.getDatePicker().setMaxDate(calendar.getTimeInMillis());
-            datePickerDialog.show();
+            if(markersAdded) {
+                datePickerDialog.getDatePicker().setMaxDate(calendar.getTimeInMillis());
+                datePickerDialog.show();
+            }
+            else {
+                refresh();
+            }
         });
         timePicker = findViewById(R.id.timePicker);
         timePicker.setOnValueChangedListener(this);
+        timePicker.setOnScrollListener(this);
 
         // Set default date and time
-        onDateSet(null, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-        onValueChange(null, 0, calendar.get(Calendar.HOUR_OF_DAY));
+        onDateSet(datePickerDialog.getDatePicker(), calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+        setTime(calendar.get(Calendar.HOUR_OF_DAY), false);
         timePicker.setValue(calendar.get(Calendar.HOUR_OF_DAY));
+        isInitial = false;
 
         distance = PreferenceManager.getDefaultSharedPreferences(this).getInt("distanceThreshold", 2000);
         useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useImperialUnits", false);
-
-        sensorType = AOTSensorType.TEMPERATURE;
-
-
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -314,6 +331,7 @@ public class MainActivity extends AppCompatActivity
 
                                 }
                                 markersAdded=true;
+                                hideProgressView();
                             }
 
                             Frame frame = arSceneView.getArFrame();
@@ -329,13 +347,13 @@ public class MainActivity extends AppCompatActivity
                                 locationScene.processFrame(frame);
                             }
 
-                            if (loadingMessageSnackbar != null) {
-                                for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
-                                    if (plane.getTrackingState() == TrackingState.TRACKING) {
-                                        hideLoadingMessage();
-                                    }
-                                }
-                            }
+//                            if (loadingMessageSnackbar != null) {
+//                                for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
+//                                    if (plane.getTrackingState() == TrackingState.TRACKING) {
+//                                        hideLoadingMessage();
+//                                    }
+//                                }
+//                            }
                         });
 
 
@@ -665,9 +683,9 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        if (arSceneView.getSession() != null) {
-            showLoadingMessage();
-        }
+//        if (arSceneView.getSession() != null) {
+//            showLoadingMessage();
+//        }
     }
 
     /**
@@ -735,7 +753,7 @@ public class MainActivity extends AppCompatActivity
 
         loadingMessageSnackbar =
                 Snackbar.make(
-                        MainActivity.this.findViewById(android.R.id.content),
+                        coordinatorLayout,
                         R.string.plane_finding,
                         Snackbar.LENGTH_INDEFINITE);
         loadingMessageSnackbar.getView().setBackgroundColor(0xbf323232);
@@ -753,6 +771,7 @@ public class MainActivity extends AppCompatActivity
 
     private void handleCompleteableFutures()
     {
+        showProgressView("Rendering nodes ...");
         CompletableFuture.allOf(exampleLayouts.toArray(new CompletableFuture[exampleLayouts.size()]))
                 .handle(
                         (notUsed, throwable) -> {
@@ -915,39 +934,81 @@ public class MainActivity extends AppCompatActivity
         apiStartDate = Utils.stringToLocalDate(year, month + 1, dayOfMonth);
         apiEndDate = Utils.setTimeForLocalDate(23, 59, 59, apiStartDate);
         dateButton.setText(Utils.dateToString(apiStartDate, "EEE, MMM d, ''yy", TimeZone.getDefault()));
-        onValueChange(timePicker,0,timePicker.getValue());
+        setTime(timePicker.getValue(), false);
 
-        if(markersAdded) {
+        if(!isInitial) {
+            refresh();
+        }
+    }
+
+    private void refresh() {
+        if (markersAdded) {
             locationScene.clearMarkers();
             distanceRefreshed();
-        }
-        else
-        {
+        } else {
             Toast.makeText(
                     this, "Models Not Loaded. Please wait to fetch new data.", Toast.LENGTH_LONG)
                     .show();
         }
     }
 
+    private void setTime(int hour, boolean shouldRefresh) {
+        filterStartDate = Utils.setTimeForLocalDate(hour, 0, 0, apiStartDate);
+        filterEndDate = Utils.setTimeForLocalDate(hour, 59, 59, apiStartDate);
+        if(shouldRefresh) {
+            if (markersAdded) {
+                for (AOTNode node : nodes) {
+                    filterAndAggregateObservations(node);
+                }
+                for (int i = 0; i < nodes.size(); i++) {
+                    setInnerLayoutValues(exampleLayoutRenderables.get(i), nodes.get(i), i);
+                }
+            } else {
+                Toast.makeText(
+                        this, "Models Not Loaded.", Toast.LENGTH_LONG)
+                        .show();
+            }
+        }
+    }
+
+    @Override
+    public void onScrollStateChange(NumberPicker view, int scrollState) {
+        if(scrollState == NumberPicker.OnScrollListener.SCROLL_STATE_IDLE) {
+            setTime(view.getValue(), true);
+            isTimePickerScrolling = false;
+            Log.d(TAG, "State changed " + view.getValue());
+        }
+        else {
+            isTimePickerScrolling = true;
+        }
+    }
+
     @Override
     public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-        filterStartDate = Utils.setTimeForLocalDate(newVal, 0, 0, apiStartDate);
-        filterEndDate = Utils.setTimeForLocalDate(newVal, 59, 59, apiStartDate);
-        if(markersAdded)
-        {
-            for(AOTNode node : nodes) {
-                filterAndAggregateObservations(node);
-            }
-            for(int i=0; i<nodes.size(); i++)
-            {
-                setInnerLayoutValues(exampleLayoutRenderables.get(i), nodes.get(i),i);
-            }
+        if(!isTimePickerScrolling) {
+            setTime(newVal, true);
+            Log.d(TAG, "Value changed " +newVal);
         }
-        else
-        {
-            Toast.makeText(
-                    this, "Models Not Loaded.", Toast.LENGTH_LONG)
-                    .show();
+    }
+
+    private void showProgressView(String message) {
+        if (progressViewSnackbar != null && progressViewSnackbar.isShownOrQueued()) {
+            progressViewSnackbar.setText(message);
+            return;
         }
+        progressViewSnackbar = Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_INDEFINITE);
+        ViewGroup contentLay = (ViewGroup) progressViewSnackbar.getView().findViewById(com.google.android.material.R.id.snackbar_text).getParent();
+        ProgressBar item = new ProgressBar(contentLay.getContext());
+        contentLay.addView(item,0);
+
+        progressViewSnackbar.show();
+        Log.d(TAG, "Showing progress view");
+    }
+
+    private void hideProgressView() {
+        if(progressViewSnackbar != null) {
+            progressViewSnackbar.dismiss();
+        }
+        Log.d(TAG, "Hiding progress view");
     }
 }
