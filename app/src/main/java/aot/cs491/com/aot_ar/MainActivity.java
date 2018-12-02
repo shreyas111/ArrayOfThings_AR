@@ -243,8 +243,12 @@ public class MainActivity extends AppCompatActivity
 
         datePickerDialog = new DatePickerDialog(this);
         datePickerDialog.setOnDateSetListener(this);
+        datePickerDialog.getDatePicker().setMinDate(Utils.stringToLocalDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).getTime());
         dateButton = findViewById(R.id.dateButton);
-        dateButton.setOnClickListener(v -> datePickerDialog.show());
+        dateButton.setOnClickListener(v -> {
+            datePickerDialog.getDatePicker().setMaxDate(calendar.getTimeInMillis());
+            datePickerDialog.show();
+        });
         timePicker = findViewById(R.id.timePicker);
         timePicker.setOnValueChangedListener(this);
 
