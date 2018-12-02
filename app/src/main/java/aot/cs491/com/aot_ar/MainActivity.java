@@ -97,6 +97,8 @@ public class MainActivity extends AppCompatActivity
 
     private boolean installRequested;
     private boolean hasFinishedLoading = false;
+    private boolean markersAdded=false;
+
     private Snackbar loadingMessageSnackbar = null;
     private ArSceneView arSceneView;
     // Renderables for this example
@@ -136,30 +138,7 @@ public class MainActivity extends AppCompatActivity
                                         Log.i(TAG, "node has: " + node.getObservations().size() + " observations from " + node.getSensors().size() + " sensors");
 
                                         if (!node.getObservations().isEmpty()) {
-                                            List<Observable<List<AOTObservation>>> filterCalls = new ArrayList<>();
-                                            for(AOTSensorType aSensorType: AOTSensorType.values()) {
-                                                filterCalls.add(AOTService.filterObservations(node.getObservations(), aSensorType, filterStartDate, filterEndDate).toObservable());
-                                            }
-                                            DisposablesManager.add(
-                                                    Observable.fromIterable(filterCalls)
-                                                            .flatMap(listSingle -> listSingle)
-                                                            .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "avg").toObservable())
-//                                                            .subscribe(aotObservations -> {
-//                                                                DisposablesManager.add(
-//                                                                    AOTService.aggregateObservations(aotObservations, "avg")
-                                                                            .subscribe(aotObservation -> {
-                                                                                if(aotObservation.getSensorPath() != null) {
-                                                                                    node.getAggregatedObservations().put(aotObservation.getSensorType(), aotObservation);
-                                                                                }
-                                                                                else {
-                                                                                    node.getAggregatedObservations().put(aotObservation.getSensorType(), null);
-                                                                                }
-                                                                            },
-                                                                            throwable -> Log.e(TAG, "Error while filtering/aggregating observations:", throwable)
-                                                                    )
-                                                                );
-//                                                            })
-//                                            );
+                                            filterAndAggregateObservations(node);
                                         }
                                     }
                                     else {
@@ -178,7 +157,34 @@ public class MainActivity extends AppCompatActivity
         );
     }
 
-    public void distanceRefreshed(int dist)
+    private void filterAndAggregateObservations(AOTNode node) {
+        List<Observable<List<AOTObservation>>> filterCalls = new ArrayList<>();
+        for(AOTSensorType aSensorType: AOTSensorType.values()) {
+            filterCalls.add(AOTService.filterObservations(node.getObservations(), aSensorType, filterStartDate, filterEndDate).toObservable());
+        }
+        DisposablesManager.add(
+                Observable.fromIterable(filterCalls)
+                        .flatMap(listSingle -> listSingle)
+                        .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "avg").toObservable())
+//                                                            .subscribe(aotObservations -> {
+//                                                                DisposablesManager.add(
+//                                                                    AOTService.aggregateObservations(aotObservations, "avg")
+                        .subscribe(aotObservation -> {
+                                    if(aotObservation.getSensorPath() != null) {
+                                        node.getAggregatedObservations().put(aotObservation.getSensorType(), aotObservation);
+                                    }
+                                    else {
+                                        node.getAggregatedObservations().put(aotObservation.getSensorType(), null);
+                                    }
+                                },
+                                throwable -> Log.e(TAG, "Error while filtering/aggregating observations:", throwable)
+                        )
+        );
+//                                                            })
+//                                            );
+    }
+
+    public void distanceRefreshed()
     {
 
         nodes = new ArrayList<>();
@@ -187,7 +193,9 @@ public class MainActivity extends AppCompatActivity
         locationMarkers = new ArrayList<LocationMarker>();
         locationMarkersCustom = new ArrayList<LocationMarkerCustom>();
         locationScene=null;
-        this.distance=dist;
+        hasFinishedLoading = false;
+        markersAdded = false;
+
 
         try {
             mFusedLocationClient.getLastLocation()
@@ -238,6 +246,7 @@ public class MainActivity extends AppCompatActivity
         dateButton = findViewById(R.id.dateButton);
         dateButton.setOnClickListener(v -> datePickerDialog.show());
         timePicker = findViewById(R.id.timePicker);
+        timePicker.setOnValueChangedListener(this);
 
         // Set default date and time
         onDateSet(null, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
@@ -249,7 +258,7 @@ public class MainActivity extends AppCompatActivity
 
         sensorType = AOTSensorType.TEMPERATURE;
 
-        distanceRefreshed(distance);
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -300,6 +309,7 @@ public class MainActivity extends AppCompatActivity
                                     locationScene.mLocationMarkers.add(locationMarkers.get(i));
 
                                 }
+                                markersAdded=true;
                             }
 
                             Frame frame = arSceneView.getArFrame();
@@ -478,12 +488,6 @@ public class MainActivity extends AppCompatActivity
                 graph.addSeries(series);
 
 
-                //compLayoutText1.setText(nodes.get(i).getAddress());
-                //locationScene.clearMarkers();
-                //locationScene = null;
-                //hasFinishedLoading = false;
-                //distanceRefreshed(2000);
-
                 Toast.makeText(
                         c, "Location Marker Long Pressed.", Toast.LENGTH_LONG)
                         .show();
@@ -498,76 +502,38 @@ public class MainActivity extends AppCompatActivity
                 l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.VISIBLE);
                 GraphView graph = (GraphView) l.findViewById(R.id.graph1);
                 graph.removeAllSeries();
-                LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[]{
-                        new DataPoint(0, 1),
-                        new DataPoint(1, 5),
-                        new DataPoint(2, 3),
-                        new DataPoint(3, 5),
-                        new DataPoint(4, 17),
-                        new DataPoint(5, 5),
-                        new DataPoint(6, 5),
-                        new DataPoint(7, 23),
-                        new DataPoint(8, 18),
-                        new DataPoint(9, 5),
-                        new DataPoint(10, 5),
-                        new DataPoint(11, 7),
-                        new DataPoint(12, 13),
-                        new DataPoint(13, 5),
-                        new DataPoint(14, 3),
-                        new DataPoint(15, 23),
-                        new DataPoint(16, 5),
-                        new DataPoint(17, 2),
-                        new DataPoint(18, 5),
-                        new DataPoint(19, 34),
-                        new DataPoint(20, 2),
-                        new DataPoint(21, 5),
-                        new DataPoint(22, 4),
-                        new DataPoint(23, 6),
-                });
+                ArrayList <DataPoint> dataPointsList = new ArrayList<DataPoint>();
+                for (AOTObservation a:nodes.get(i).getObservations())
+                {
+                    if(menuOptionSelected.equals("weather")) {
+                        if (a.getSensorType().equals(AOTSensorType.TEMPERATURE)) {
+                            dataPointsList.add(new DataPoint(a.getTimestamp(), a.getValue(useImperialUnits)));
+                        }
+                    }
+                    else if (menuOptionSelected.equals("light"))
+                    {
+                        if (a.getSensorType().equals(AOTSensorType.LIGHT_INTENSITY)) {
+                            dataPointsList.add(new DataPoint(a.getTimestamp(), a.getValue(useImperialUnits)));
+                        }
+                    }
+                    else if (menuOptionSelected.equals("airquality"))
+                    {
+                        if (a.getSensorType().equals(AOTSensorType.CARBON_MONOXIDE)) {
+                            dataPointsList.add(new DataPoint(a.getTimestamp(), a.getValue(useImperialUnits)));
+                        }
+                    }
+
+                }
+                DataPoint da[]=  dataPointsList.toArray(new DataPoint[dataPointsList.size()]);
+                LineGraphSeries<DataPoint> series = new LineGraphSeries<>(da);
                 graph.addSeries(series);
 
                 Toast.makeText(
-                    c, "Temp marker touched.", Toast.LENGTH_LONG)
+                    c, "Temp marker touched." + i, Toast.LENGTH_LONG)
                     .show();
                  return ;
             }
         });
-//        textViewData1.setOnTouchListener((v, event) -> {
-//
-//            v.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.VISIBLE);
-//            GraphView graph = (GraphView) v.findViewById(R.id.graph1);
-//            LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[]{
-//                    new DataPoint(0, 1),
-//                    new DataPoint(1, 5),
-//                    new DataPoint(2, 3),
-//                    new DataPoint(3, 5),
-//                    new DataPoint(4, 17),
-//                    new DataPoint(5, 5),
-//                    new DataPoint(6, 5),
-//                    new DataPoint(7, 22),
-//                    new DataPoint(8, 14),
-//                    new DataPoint(9, 5),
-//                    new DataPoint(10, 9),
-//                    new DataPoint(11, 12),
-//                    new DataPoint(12, 13),
-//                    new DataPoint(13, 5),
-//                    new DataPoint(14, 3),
-//                    new DataPoint(15, 2),
-//                    new DataPoint(16, 5),
-//                    new DataPoint(17, 2),
-//                    new DataPoint(18, 5),
-//                    new DataPoint(19, 34),
-//                    new DataPoint(20, 2),
-//                    new DataPoint(21, 5),
-//                    new DataPoint(22, 4),
-//                    new DataPoint(23, 62),
-//            });
-//            graph.addSeries(series);
-//            Toast.makeText(
-//                    c, "Temp marker touched.", Toast.LENGTH_LONG)
-//                    .show();
-//            return false;
-//        });
 
         textViewData2.setOnTouchListener((v, event) -> {
             Toast.makeText(
@@ -676,6 +642,10 @@ public class MainActivity extends AppCompatActivity
                         .show();
             }
             finish();
+        }
+        else
+        {
+            distanceRefreshed();
         }
     }
 
@@ -884,15 +854,40 @@ public class MainActivity extends AppCompatActivity
         apiStartDate = Utils.stringToLocalDate(year, month + 1, dayOfMonth);
         apiEndDate = Utils.setTimeForLocalDate(23, 59, 59, apiStartDate);
         dateButton.setText(Utils.dateToString(apiStartDate, "EEE, MMM d, ''yy", TimeZone.getDefault()));
+        onValueChange(timePicker,0,timePicker.getValue());
 
-        // TODO: Trigger API fetch and filter, aggregation
+        if(markersAdded) {
+            locationScene.clearMarkers();
+            distanceRefreshed();
+        }
+        else
+        {
+            Toast.makeText(
+                    this, "Models Not Loaded. Please wait to fetch new data.", Toast.LENGTH_LONG)
+                    .show();
+        }
     }
 
     @Override
     public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
         filterStartDate = Utils.setTimeForLocalDate(newVal, 0, 0, apiStartDate);
         filterEndDate = Utils.setTimeForLocalDate(newVal, 59, 59, apiStartDate);
-
+        if(markersAdded)
+        {
+            for(AOTNode node : nodes) {
+                filterAndAggregateObservations(node);
+            }
+            for(int i=0; i<nodes.size(); i++)
+            {
+                setInnerLayoutValues(exampleLayoutRenderables.get(i), nodes.get(i),i);
+            }
+        }
+        else
+        {
+            Toast.makeText(
+                    this, "Models Not Loaded.", Toast.LENGTH_LONG)
+                    .show();
+        }
         // TODO: Trigger filter and aggregation
     }
 }
