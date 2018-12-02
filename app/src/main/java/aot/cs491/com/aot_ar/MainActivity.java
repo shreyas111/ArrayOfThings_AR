@@ -71,7 +71,7 @@ import uk.co.appoly.arcorelocation.rendering.LocationNodeRender;
 import uk.co.appoly.arcorelocation.utils.ARLocationPermissionHelper;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, DatePickerDialog.OnDateSetListener, NumberPicker.OnValueChangeListener
+        implements NavigationView.OnNavigationItemSelectedListener, DatePickerDialog.OnDateSetListener, NumberPicker.OnValueChangeListener, NumberPicker.OnScrollListener
 {
 
     int count1 =0;
@@ -94,7 +94,9 @@ public class MainActivity extends AppCompatActivity
     Button dateButton;
     DatePickerDialog datePickerDialog;
     NumberPicker timePicker;
+    FloatingActionButton refreshButton;
 
+    private boolean isTimePickerScrolling = false;
     private boolean installRequested;
     private boolean hasFinishedLoading = false;
     private Snackbar loadingMessageSnackbar = null;
@@ -230,6 +232,11 @@ public class MainActivity extends AppCompatActivity
         helloWorldLabel = findViewById(R.id.textTime);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        refreshButton = findViewById(R.id.refreshButton);
+        refreshButton.setOnClickListener(v -> {
+            initializeAndCallAPI();
+        });
+
         // Initialize date picker
         Calendar calendar = Calendar.getInstance();
 
@@ -242,16 +249,16 @@ public class MainActivity extends AppCompatActivity
             datePickerDialog.show();
         });
         timePicker = findViewById(R.id.timePicker);
+        timePicker.setOnValueChangedListener(this);
+        timePicker.setOnScrollListener(this);
 
         // Set default date and time
-        onDateSet(null, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-        onValueChange(null, 0, calendar.get(Calendar.HOUR_OF_DAY));
+        onDateSet(datePickerDialog.getDatePicker(), calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+        setTime(calendar.get(Calendar.HOUR_OF_DAY));
         timePicker.setValue(calendar.get(Calendar.HOUR_OF_DAY));
 
         distance = PreferenceManager.getDefaultSharedPreferences(this).getInt("distanceThreshold", 2000);
         useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useImperialUnits", false);
-
-        sensorType = AOTSensorType.TEMPERATURE;
 
         distanceRefreshed(distance);
 
@@ -708,7 +715,7 @@ public class MainActivity extends AppCompatActivity
 
         loadingMessageSnackbar =
                 Snackbar.make(
-                        MainActivity.this.findViewById(android.R.id.content),
+                        MainActivity.this.findViewById(R.id.coordinator),
                         R.string.plane_finding,
                         Snackbar.LENGTH_INDEFINITE);
         loadingMessageSnackbar.getView().setBackgroundColor(0xbf323232);
@@ -892,11 +899,28 @@ public class MainActivity extends AppCompatActivity
         // TODO: Trigger API fetch and filter, aggregation
     }
 
+    private void setTime(int hour) {
+        filterStartDate = Utils.setTimeForLocalDate(hour, 0, 0, apiStartDate);
+        filterEndDate = Utils.setTimeForLocalDate(hour, 59, 59, apiStartDate);
+    }
+
+    @Override
+    public void onScrollStateChange(NumberPicker view, int scrollState) {
+        if(scrollState == NumberPicker.OnScrollListener.SCROLL_STATE_IDLE) {
+            setTime(view.getValue());
+            isTimePickerScrolling = false;
+            Log.d(TAG, "State changed " + view.getValue());
+        }
+        else {
+            isTimePickerScrolling = true;
+        }
+    }
+
     @Override
     public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-        filterStartDate = Utils.setTimeForLocalDate(newVal, 0, 0, apiStartDate);
-        filterEndDate = Utils.setTimeForLocalDate(newVal, 59, 59, apiStartDate);
-
-        // TODO: Trigger filter and aggregation
+        if(!isTimePickerScrolling) {
+            setTime(newVal);
+            Log.d(TAG, "Value changed " +newVal);
+        }
     }
 }
