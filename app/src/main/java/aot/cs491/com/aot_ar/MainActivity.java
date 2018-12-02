@@ -393,28 +393,25 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_light) {
-            Log.i("MainActivity:: MEnu","Light Selected");
-//            menuOptionSelected="light";
-//            if(locationScene!=null)
-//            {
-//                setInnerLayoutValuesFromMenu();
-//            }
+            menuOptionSelected="light";
+            if(markersAdded)
+            {
+                setInnerLayoutValuesFromMenu();
+            }
 
         } else if (id == R.id.nav_pollution) {
-            Log.i("MainActivity:: MEnu","Pollution Selected");
-//            menuOptionSelected="airquality";
-//            if(locationScene!=null)
-//            {
-//                setInnerLayoutValuesFromMenu();
-//            }
+            menuOptionSelected="airquality";
+            if(markersAdded)
+            {
+                setInnerLayoutValuesFromMenu();
+            }
 
         } else if (id == R.id.nav_weather) {
-//            menuOptionSelected="weather";
-            Log.i("MainActivity:: MEnu","Weather Selected");
-//            if(locationScene!=null)
-//            {
-//                setInnerLayoutValuesFromMenu();
-//            }
+            menuOptionSelected="weather";
+            if(markersAdded)
+            {
+                setInnerLayoutValuesFromMenu();
+            }
 
         }
 
@@ -841,6 +838,7 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+
     public void setInnerLayoutValues(ViewRenderable vr, AOTNode aotN, int i)
     {
         View eView = vr.getView();
@@ -915,10 +913,11 @@ public class MainActivity extends AppCompatActivity
     }
     public void setInnerLayoutValuesFromMenu()
     {
-        for(int i=0; i<nodes.size(); i++)
-        {
-            setInnerLayoutValues(exampleLayoutRenderables.get(i), nodes.get(i),i);
+        for(int i=0; i<nodes.size(); i++) {
+
+            setInnerLayoutValues(exampleLayoutRenderables.get(i), nodes.get(i), i);
         }
+
     }
 
     @Override
