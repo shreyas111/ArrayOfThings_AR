@@ -194,10 +194,15 @@ public class AOTService {
 
                 case "avg":
                 case "mean":
-                    Float sum = Utils.sumItems(observations, AOTObservation::getValue);
-                    if (!sum.isNaN()) {
-                        aggregatedValue = sum / observations.size();
-                    }
+                    aggregatedValue = Utils.meanOfItems(observations, AOTObservation::getValue);
+                    break;
+
+                case "median":
+                    aggregatedValue = Utils.medianOfItems(observations, AOTObservation::getValue);
+                    break;
+
+                case "mode":
+                    aggregatedValue = Utils.modeOfItems(observations, AOTObservation::getValue);
                     break;
             }
 
@@ -206,42 +211,6 @@ public class AOTService {
         })
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread());
-
-        /*if (observations.isEmpty())
-            return null;
-
-        AOTObservation aggregatedObservation = new AOTObservation();
-
-        aggregatedObservation.setNodeVsn(observations.get(0).getNodeVsn());
-        aggregatedObservation.setSensorPath((observations.get(0).getSensorPath()));
-        aggregatedObservation.setTimestamp(observations.get(0).getTimestamp());
-
-        Float aggregatedValue = Float.NaN;
-
-        switch (aggregateFunction.toLowerCase()) {
-            case "min":
-                aggregatedValue = Utils.minOfItems(observations, AOTObservation::getValue);
-                break;
-
-            case "max":
-                aggregatedValue = Utils.maxOfItems(observations, AOTObservation::getValue);
-                break;
-
-            case "sum":
-                aggregatedValue = Utils.sumItems(observations, AOTObservation::getValue);
-                break;
-
-            case "avg":
-            case "mean":
-                Float sum = Utils.sumItems(observations, AOTObservation::getValue);
-                if (!sum.isNaN()) {
-                    aggregatedValue = sum / observations.size();
-                }
-                break;
-        }
-
-        aggregatedObservation.setValue(aggregatedValue);
-        return aggregatedObservation;*/
     }
 }
 
