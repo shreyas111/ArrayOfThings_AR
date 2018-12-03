@@ -1292,7 +1292,7 @@ public class MainActivity extends AppCompatActivity
             distanceRefreshed();
         } else {
             Toast.makeText(
-                    this, "Models Not Loaded. Please wait to fetch new data.", Toast.LENGTH_LONG)
+                    this, "Please wait. Data load already in progress", Toast.LENGTH_LONG)
                     .show();
         }
     }
@@ -1311,7 +1311,7 @@ public class MainActivity extends AppCompatActivity
                 }
             } else {
                 Toast.makeText(
-                        this, "Models Not Loaded.", Toast.LENGTH_LONG)
+                        this, "Data not loaded", Toast.LENGTH_LONG)
                         .show();
             }
         }
