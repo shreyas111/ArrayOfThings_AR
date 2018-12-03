@@ -236,13 +236,7 @@ public class Utils {
 
     // ======== OTHERS =============
 
-    public <T> CompletableFuture<List<T>> allOf(List<CompletableFuture<T>> futuresList) {
-        CompletableFuture<Void> allFuturesResult =
-                CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[futuresList.size()]));
-        return allFuturesResult.thenApply(v ->
-                futuresList.stream().
-                        map(future -> future.join()).
-                        collect(Collectors.<T>toList())
-        );
+    public static Float round(Float number) {
+        return number.isNaN() || number.isInfinite() ? number : Math.round(number * 100)/100f;
     }
 }
