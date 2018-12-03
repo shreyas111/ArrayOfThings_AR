@@ -5,9 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -32,9 +36,9 @@ import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.UnavailableException;
 import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.Node;
-import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.shawnlin.numberpicker.NumberPicker;
@@ -158,6 +162,9 @@ public class MainActivity extends AppCompatActivity
                                 () -> {
                                     Log.i(TAG, "Finished fetching nearby nodes");
                                     everythingIsDone.set(true);
+                                    if(nodes.isEmpty()) {
+                                        handleCompleteableFutures();
+                                    }
                                 }
                         )
         );
@@ -213,8 +220,8 @@ public class MainActivity extends AppCompatActivity
                             }
                             else
                             {
-                                longitude = -87.662111;
-                                latitude = 41.871629;
+                                longitude = -87.647887;
+                                latitude = 41.8698527;
                             }
                             initializeAndCallAPI();
                         }
@@ -576,12 +583,6 @@ public class MainActivity extends AppCompatActivity
                 compLayout.setVisibility(LinearLayout.VISIBLE);
                 clearComparisonLayoutValues(compLayout);
                 fillComparisonLayoutValues(compLayout,eView, i);
-
-
-
-                Toast.makeText(
-                        c, "Location Marker Long Pressed.", Toast.LENGTH_LONG)
-                        .show();
                 return false;
             }
         });
@@ -593,10 +594,8 @@ public class MainActivity extends AppCompatActivity
                 l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.GONE);
                 l.findViewById(R.id.aggregate_layout_id).setVisibility(LinearLayout.GONE);
 
-                Toast.makeText(
-                        c, "Distance Marker Touched." + i, Toast.LENGTH_LONG)
-                        .show();
-                return ;
+
+                vibrate();
             }
         });
 
@@ -691,11 +690,10 @@ public class MainActivity extends AppCompatActivity
                 DataPoint da[]=  dataPointsList.toArray(new DataPoint[dataPointsList.size()]);
                 LineGraphSeries<DataPoint> series = new LineGraphSeries<>(da);
                 graph.addSeries(series);
+                styleGraph(graph, series);
 
-                Toast.makeText(
-                    c, "Temp marker touched." + i, Toast.LENGTH_LONG)
-                    .show();
-                 return ;
+
+                vibrate();
             }
         });
 
@@ -789,11 +787,10 @@ public class MainActivity extends AppCompatActivity
                 DataPoint da[]=  dataPointsList.toArray(new DataPoint[dataPointsList.size()]);
                 LineGraphSeries<DataPoint> series = new LineGraphSeries<>(da);
                 graph.addSeries(series);
+                styleGraph(graph, series);
 
-                Toast.makeText(
-                        c, "Pressure Marker Touched." + i, Toast.LENGTH_LONG)
-                        .show();
-                return ;
+
+                vibrate();
             }
         });
 
@@ -892,16 +889,29 @@ public class MainActivity extends AppCompatActivity
                 DataPoint da[]=  dataPointsList.toArray(new DataPoint[dataPointsList.size()]);
                 LineGraphSeries<DataPoint> series = new LineGraphSeries<>(da);
                 graph.addSeries(series);
+                styleGraph(graph, series);
 
-                Toast.makeText(
-                        c, "Humidity Marker Touched." + i, Toast.LENGTH_LONG)
-                        .show();
-                return ;
+
+                vibrate();
             }
         });
 
 
         return base;
+    }
+
+    private void styleGraph(GraphView graph, LineGraphSeries series) {
+        graph.setTitle("TREND");
+        graph.setTitleColor(getColor(R.color.colorAccentDark));
+        graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(MainActivity.this));
+        graph.getGridLabelRenderer().setNumHorizontalLabels(4);
+        graph.getViewport().setMinX(apiStartDate.getTime());
+        graph.getViewport().setMaxX(apiEndDate.getTime());
+        graph.getViewport().setXAxisBoundsManual(true);
+
+        if(series != null) {
+            series.setColor(getColor(R.color.colorAccent));
+        }
     }
 
     /**
@@ -1085,7 +1095,9 @@ public class MainActivity extends AppCompatActivity
             public void render(LocationNode node) {
                 View eView = vr.getView();
                 TextView value2 = eView.findViewById(R.id.textView_dist1);
-                value2.setText(node.getDistance() + "M");
+                Float distanceInKilometers = node.getDistance() / 1000f;
+                Float distanceValue = useImperialUnits ? Utils.kilometersToMiles(distanceInKilometers) : distanceInKilometers;
+                value2.setText(Utils.round(distanceValue).toString() + (useImperialUnits ? " mi" : " km"));
 
             }
         });
@@ -1170,7 +1182,7 @@ public class MainActivity extends AppCompatActivity
         }
         if(menuOptionSelected=="light") {
             value1l.setBackgroundResource(0);
-            value1l.setText("LIGHT");
+            value1l.setText("Light");
             value3l.setBackgroundResource(0);
             value3l.setText("IR");
             value4l.setBackgroundResource(0);
@@ -1340,10 +1352,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void hideProgressView() {
-        if(progressViewSnackbar != null && progressViewSnackbar.isShownOrQueued()) {
-            progressViewSnackbar.dismiss();
-            progressViewSnackbar = null;
-            Log.d(TAG, "Hiding progress view");
-        }
+        new Handler().postDelayed(() -> {
+            if (progressViewSnackbar != null && progressViewSnackbar.isShownOrQueued()) {
+                progressViewSnackbar.dismiss();
+                progressViewSnackbar = null;
+                vibrate(100);
+                Log.d(TAG, "Hiding progress view");
+            }
+        }, 6000);
+    }
+
+    private void vibrate() {
+        vibrate(20);
+    }
+    private void vibrate(int durationInMillis) {
+        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        vibrator.vibrate(VibrationEffect.createOneShot(durationInMillis, VibrationEffect.DEFAULT_AMPLITUDE));
     }
 }

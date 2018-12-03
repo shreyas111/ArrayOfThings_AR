@@ -52,7 +52,7 @@ public enum AOTSensorType {
                 return "%";
 
             case PRESSURE:
-                return imperial ? "hPa" : "inHg";
+                return imperial ? "inHg" : "hPa";
 
             case LIGHT_INTENSITY:
                 return "lux";

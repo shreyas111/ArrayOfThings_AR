@@ -8,6 +8,7 @@
     android:layout_gravity="center">
 
     <TextView
+        android:soundEffectsEnabled="true"
         android:id="@+id/textView_loc1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -21,6 +22,7 @@
         style="@style/TextShadow"/>
 
     <TextView
+        android:soundEffectsEnabled="true"
         android:id="@+id/textView_dist1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -49,6 +51,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:soundEffectsEnabled="true"
                     android:id="@+id/textView_T"
                     style="@style/TextShadow"
                     android:layout_width="25dp"
@@ -65,6 +68,7 @@
                     android:textSize="12sp" />
 
                 <TextView
+                    android:soundEffectsEnabled="true"
                     android:id="@+id/textView_temp"
                     style="@style/TextShadow"
                     android:layout_width="40dp"
@@ -79,6 +83,7 @@
                     android:backgroundTintMode="src_atop"/>
 
                 <TextView
+                    android:soundEffectsEnabled="true"
                     android:id="@+id/textView_tempu"
                     style="@style/TextShadow"
                     android:layout_width="45dp"
@@ -99,6 +104,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:soundEffectsEnabled="true"
                     android:id="@+id/textView_P"
                     style="@style/TextShadow"
                     android:layout_width="25dp"
@@ -115,6 +121,7 @@
                     android:textSize="12sp" />
 
                 <TextView
+                    android:soundEffectsEnabled="true"
                     android:id="@+id/textView_pres"
                     style="@style/TextShadow"
                     android:layout_width="40dp"
@@ -129,6 +136,7 @@
                     android:backgroundTintMode="src_atop"/>
 
                 <TextView
+                    android:soundEffectsEnabled="true"
                     android:id="@+id/textView_presu"
                     style="@style/TextShadow"
                     android:layout_width="45dp"
@@ -149,6 +157,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:soundEffectsEnabled="true"
                     android:id="@+id/textView_H"
                     style="@style/TextShadow"
                     android:layout_width="25dp"
@@ -165,6 +174,7 @@
                     android:textSize="12sp" />
 
                 <TextView
+                    android:soundEffectsEnabled="true"
                     android:id="@+id/textView_hum"
                     style="@style/TextShadow"
                     android:layout_width="40dp"
@@ -179,6 +189,7 @@
                     android:backgroundTintMode="src_atop"/>
 
                 <TextView
+                    android:soundEffectsEnabled="true"
                     android:id="@+id/textView_humu"
                     style="@style/TextShadow"
                     android:layout_width="45dp"

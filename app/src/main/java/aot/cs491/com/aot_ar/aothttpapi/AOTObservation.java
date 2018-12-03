@@ -41,16 +41,21 @@ public class AOTObservation {
     }
 
     public Float getValue(boolean useImperialUnits) {
+        Float returnValue;
+
         switch (getSensorType()) {
             case TEMPERATURE:
-                return useImperialUnits ? Utils.celsiusToFahrenheit(value) : value;
+                returnValue = useImperialUnits ? Utils.celsiusToFahrenheit(value) : value;
+                break;
 
             case PRESSURE:
-                return useImperialUnits ? Utils.hectoPascalToInchesOfMercury(value) : value;
+                returnValue = useImperialUnits ? Utils.hectoPascalToInchesOfMercury(value) : value;
+                break;
 
             default:
-                return value;
+                returnValue = value;
         }
+        return Utils.round(returnValue);
     }
 
     public void setValue(Float value) {
