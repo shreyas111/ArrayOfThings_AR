@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,7 +25,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.ar.core.Frame;
-import com.google.ar.core.Plane;
 import com.google.ar.core.Session;
 import com.google.ar.core.TrackingState;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
@@ -77,9 +75,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, DatePickerDialog.OnDateSetListener, NumberPicker.OnValueChangeListener, NumberPicker.OnScrollListener
 {
 
-    int count1 =0;
     private FusedLocationProviderClient mFusedLocationClient;
-    Location loc;
 
     String menuOptionSelected;
     double longitude;
@@ -89,10 +85,7 @@ public class MainActivity extends AppCompatActivity
     Date apiEndDate;
     Date filterStartDate;
     Date filterEndDate;
-    AOTSensorType sensorType;
     boolean useImperialUnits;
-
-    static final int DIALOG_ID = 0;
 
     CoordinatorLayout coordinatorLayout;
     Button dateButton;
@@ -109,12 +102,7 @@ public class MainActivity extends AppCompatActivity
     private Snackbar loadingMessageSnackbar = null;
     private Snackbar progressViewSnackbar;
     private ArSceneView arSceneView;
-    // Renderables for this example
-    CompletableFuture<ViewRenderable> exampleLayout;
-    CompletableFuture<ViewRenderable> exampleLayout1;
-    private ModelRenderable andyRenderable;
-    private ViewRenderable exampleLayoutRenderable;
-    private ViewRenderable exampleLayoutRenderable1;
+
     // Our ARCore-Location scene
     private LocationScene locationScene;
     public static final String TAG = MainActivity.class.getSimpleName();
@@ -167,7 +155,6 @@ public class MainActivity extends AppCompatActivity
                                 () -> {
                                     Log.i(TAG, "Finished fetching nearby nodes");
                                     everythingIsDone.set(true);
-//                                    handleCompleteableFutures();
                                 }
                         )
         );
@@ -182,9 +169,6 @@ public class MainActivity extends AppCompatActivity
                 Observable.fromIterable(filterCalls)
                         .flatMap(listSingle -> listSingle)
                         .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "avg").toObservable())
-//                                                            .subscribe(aotObservations -> {
-//                                                                DisposablesManager.add(
-//                                                                    AOTService.aggregateObservations(aotObservations, "avg")
                         .subscribe(aotObservation -> {
                                     if(aotObservation.getSensorPath() != null) {
                                         node.getAggregatedObservations().put(aotObservation.getSensorType(), aotObservation);
@@ -197,8 +181,6 @@ public class MainActivity extends AppCompatActivity
                                 () -> onComplete.apply(node)
                         )
         );
-//                                                            })
-//                                            );
     }
 
     public void distanceRefreshed()
@@ -435,28 +417,6 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    /**
-     * Example node of a layout
-     *
-     * @return
-     */
-
-    private Node getExampleView1(ViewRenderable vr) {
-        Node base = new Node();
-        base.setRenderable(vr);
-        Context c = this;
-        // Add  listeners etc here
-        View eView = vr.getView();
-        eView.setOnTouchListener((v, event) -> {
-            Toast.makeText(
-                    c, "Location marker touched.", Toast.LENGTH_LONG)
-                    .show();
-            return false;
-        });
-
-        return base;
-    }
-
     private Node getExampleView(int i) {
         Node base = new Node();
         base.setRenderable(exampleLayoutRenderables.get(i));
@@ -521,7 +481,9 @@ public class MainActivity extends AppCompatActivity
                     AOTService.filterObservations(nodes.get(i).getObservations(), AOTSensorType.TEMPERATURE, apiStartDate, apiEndDate)
                             .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "min"))
                             .subscribe(aotObservation -> {
-                                min.setText(aotObservation.getValue().toString());
+                                if(aotObservation != null && aotObservation.getSensorPath() != null) {
+                                    min.setText(aotObservation.getValue().toString());
+                                }
                             })
                 );
 
@@ -529,14 +491,18 @@ public class MainActivity extends AppCompatActivity
                         AOTService.filterObservations(nodes.get(i).getObservations(), AOTSensorType.TEMPERATURE, apiStartDate, apiEndDate)
                                 .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "median"))
                                 .subscribe(aotObservation -> {
-                                    med.setText(aotObservation.getValue().toString());
+                                    if(aotObservation != null && aotObservation.getSensorPath() != null) {
+                                        med.setText(aotObservation.getValue().toString());
+                                    }
                                 })
                 );
                 DisposablesManager.add(
                         AOTService.filterObservations(nodes.get(i).getObservations(), AOTSensorType.TEMPERATURE, apiStartDate, apiEndDate)
                                 .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "max"))
                                 .subscribe(aotObservation -> {
-                                    max.setText(aotObservation.getValue().toString());
+                                    if(aotObservation != null && aotObservation.getSensorPath() != null) {
+                                        max.setText(aotObservation.getValue().toString());
+                                    }
                                 })
                 );
 
@@ -673,24 +639,6 @@ public class MainActivity extends AppCompatActivity
         return base;
     }
 
-
-    /***
-     * Example Node of a 3D model
-     *
-     * @return
-     */
-    private Node getAndy() {
-        Node base = new Node();
-        base.setRenderable(andyRenderable);
-        Context c = this;
-        base.setOnTapListener((v, event) -> {
-            Toast.makeText(
-                    c, "Andy touched.", Toast.LENGTH_LONG)
-                    .show();
-        });
-        return base;
-    }
-
     /**
      * Make sure we call locationScene.resume();
      */
@@ -735,21 +683,11 @@ public class MainActivity extends AppCompatActivity
         distance = newDistance;
         useImperialUnits = newUseImperialUnits;
 
-//        final Handler handler = new Handler();
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-                if (distanceChanged) {
-                    refresh();
-                } else if (unitsChanged) {
-                    setTime(timePicker.getValue(), true);
-                }
-//            }
-//        }, 1000);
-
-//        if (arSceneView.getSession() != null) {
-//            showLoadingMessage();
-//        }
+        if (distanceChanged) {
+            refresh();
+        } else if (unitsChanged) {
+            setTime(timePicker.getValue(), true);
+        }
     }
 
     /**
@@ -873,15 +811,6 @@ public class MainActivity extends AppCompatActivity
                 latitude,
                 getExampleView(i)
                 //getExampleView1(vr)
-        );
-    }
-
-    public LocationMarkerCustom createLocationMarkerCustom(double longitude, double latitude, ViewRenderable vr, AOTNode aotNode )
-    {
-        return new LocationMarkerCustom(
-                longitude,
-                latitude,
-                getExampleView1(vr),aotNode
         );
     }
 
