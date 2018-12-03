@@ -476,41 +476,53 @@ public class MainActivity extends AppCompatActivity
                 TextView min =l.findViewById(R.id.textViewMinVal);
                 TextView med =l.findViewById(R.id.textViewMedVal);
                 TextView max =l.findViewById(R.id.textViewMaxVal);
-
-                AOTSensorType sensorType;
-                DisposablesManager.add(
-                    AOTService.filterObservations(nodes.get(i).getObservations(), AOTSensorType.TEMPERATURE, apiStartDate, apiEndDate)
-                            .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "min"))
-                            .subscribe(aotObservation -> {
-                                if(aotObservation != null && aotObservation.getSensorPath() != null) {
-                                    min.setText(aotObservation.getValue().toString());
-                                }
-                            })
-                );
-
-                DisposablesManager.add(
-                        AOTService.filterObservations(nodes.get(i).getObservations(), AOTSensorType.TEMPERATURE, apiStartDate, apiEndDate)
-                                .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "median"))
-                                .subscribe(aotObservation -> {
-                                    if(aotObservation != null && aotObservation.getSensorPath() != null) {
-                                        med.setText(aotObservation.getValue().toString());
-                                    }
-                                })
-                );
-                DisposablesManager.add(
-                        AOTService.filterObservations(nodes.get(i).getObservations(), AOTSensorType.TEMPERATURE, apiStartDate, apiEndDate)
-                                .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "max"))
-                                .subscribe(aotObservation -> {
-                                    if(aotObservation != null && aotObservation.getSensorPath() != null) {
-                                        max.setText(aotObservation.getValue().toString());
-                                    }
-                                })
-                );
+                TextView units =l.findViewById(R.id.textViewArrgegateUnits);
+                AOTSensorType sensorType=AOTSensorType.TEMPERATURE;
+                if(menuOptionSelected=="weather") {
+                     sensorType = AOTSensorType.TEMPERATURE;
+                    units.setText(sensorType.getUnit(useImperialUnits));
+                }
+                else if(menuOptionSelected=="light")
+                {
+                     sensorType = AOTSensorType.LIGHT_INTENSITY;
+                    units.setText(sensorType.getUnit(useImperialUnits));
+                }
+                else if(menuOptionSelected=="airquality")
+                {
+                    sensorType = AOTSensorType.CARBON_MONOXIDE;
+                    units.setText(sensorType.getUnit(useImperialUnits));
+                }
 
 
+                    DisposablesManager.add(
+                            AOTService.filterObservations(nodes.get(i).getObservations(), sensorType, apiStartDate, apiEndDate)
+                                    .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "min"))
+                                    .subscribe(aotObservation -> {
 
+                                        if (aotObservation != null && aotObservation.getSensorPath() != null) {
+                                            min.setText(aotObservation.getValue(useImperialUnits).toString());
+                                        }
+                                    })
+                    );
 
-
+                    DisposablesManager.add(
+                            AOTService.filterObservations(nodes.get(i).getObservations(), sensorType, apiStartDate, apiEndDate)
+                                    .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "median"))
+                                    .subscribe(aotObservation -> {
+                                        if (aotObservation != null && aotObservation.getSensorPath() != null) {
+                                            med.setText(aotObservation.getValue(useImperialUnits).toString());
+                                        }
+                                    })
+                    );
+                    DisposablesManager.add(
+                            AOTService.filterObservations(nodes.get(i).getObservations(), sensorType, apiStartDate, apiEndDate)
+                                    .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "max"))
+                                    .subscribe(aotObservation -> {
+                                        if (aotObservation != null && aotObservation.getSensorPath() != null) {
+                                            max.setText(aotObservation.getValue(useImperialUnits).toString());
+                                        }
+                                    })
+                    );
 
 
                 GraphView graph = (GraphView) l.findViewById(R.id.graph1);
@@ -554,6 +566,58 @@ public class MainActivity extends AppCompatActivity
                 LinearLayout l=(LinearLayout) v.getParent().getParent().getParent().getParent().getParent();
                 l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.VISIBLE);
                 l.findViewById(R.id.aggregate_layout_id).setVisibility(LinearLayout.VISIBLE);
+
+                TextView min =l.findViewById(R.id.textViewMinVal);
+                TextView med =l.findViewById(R.id.textViewMedVal);
+                TextView max =l.findViewById(R.id.textViewMaxVal);
+                TextView units =l.findViewById(R.id.textViewArrgegateUnits);
+
+                AOTSensorType sensorType=AOTSensorType.PRESSURE;
+                if(menuOptionSelected=="weather") {
+                    sensorType = AOTSensorType.PRESSURE;
+                    units.setText(sensorType.getUnit(useImperialUnits));
+                }
+                else if(menuOptionSelected=="light")
+                {
+                    sensorType = AOTSensorType.INFRA_RED_LIGHT;
+                    units.setText(sensorType.getUnit(useImperialUnits));
+                }
+                else if(menuOptionSelected=="airquality")
+                {
+                    sensorType = AOTSensorType.SULPHUR_DIOXIDE;
+                    units.setText(sensorType.getUnit(useImperialUnits));
+                }
+
+
+                DisposablesManager.add(
+                        AOTService.filterObservations(nodes.get(i).getObservations(), sensorType, apiStartDate, apiEndDate)
+                                .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "min"))
+                                .subscribe(aotObservation -> {
+
+                                    if (aotObservation != null && aotObservation.getSensorPath() != null) {
+                                        min.setText(aotObservation.getValue(useImperialUnits).toString());
+                                    }
+                                })
+                );
+
+                DisposablesManager.add(
+                        AOTService.filterObservations(nodes.get(i).getObservations(), sensorType, apiStartDate, apiEndDate)
+                                .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "median"))
+                                .subscribe(aotObservation -> {
+                                    if (aotObservation != null && aotObservation.getSensorPath() != null) {
+                                        med.setText(aotObservation.getValue(useImperialUnits).toString());
+                                    }
+                                })
+                );
+                DisposablesManager.add(
+                        AOTService.filterObservations(nodes.get(i).getObservations(), sensorType, apiStartDate, apiEndDate)
+                                .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "max"))
+                                .subscribe(aotObservation -> {
+                                    if (aotObservation != null && aotObservation.getSensorPath() != null) {
+                                        max.setText(aotObservation.getValue(useImperialUnits).toString());
+                                    }
+                                })
+                );
 
                 GraphView graph = (GraphView) l.findViewById(R.id.graph1);
                 graph.removeAllSeries();
@@ -600,6 +664,58 @@ public class MainActivity extends AppCompatActivity
 //                } else if (l.findViewById(R.id.graph_layout_id).getVisibility() == View.VISIBLE){
 //                    l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.GONE);
 //                }
+
+                TextView min =l.findViewById(R.id.textViewMinVal);
+                TextView med =l.findViewById(R.id.textViewMedVal);
+                TextView max =l.findViewById(R.id.textViewMaxVal);
+                TextView units =l.findViewById(R.id.textViewArrgegateUnits);
+
+                AOTSensorType sensorType=AOTSensorType.HUMIDITY;
+                if(menuOptionSelected=="weather") {
+                    sensorType = AOTSensorType.HUMIDITY;
+                    units.setText(sensorType.getUnit(useImperialUnits));
+                }
+                else if(menuOptionSelected=="light")
+                {
+                    sensorType = AOTSensorType.ULTRA_VIOLET_LIGHT;
+                    units.setText(sensorType.getUnit(useImperialUnits));
+                }
+                else if(menuOptionSelected=="airquality")
+                {
+                    sensorType = AOTSensorType.NITROGEN_DIOXIDE;
+                    units.setText(sensorType.getUnit(useImperialUnits));
+                }
+
+
+                DisposablesManager.add(
+                        AOTService.filterObservations(nodes.get(i).getObservations(), sensorType, apiStartDate, apiEndDate)
+                                .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "min"))
+                                .subscribe(aotObservation -> {
+
+                                    if (aotObservation != null && aotObservation.getSensorPath() != null) {
+                                        min.setText(aotObservation.getValue(useImperialUnits).toString());
+                                    }
+                                })
+                );
+
+                DisposablesManager.add(
+                        AOTService.filterObservations(nodes.get(i).getObservations(), sensorType, apiStartDate, apiEndDate)
+                                .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "median"))
+                                .subscribe(aotObservation -> {
+                                    if (aotObservation != null && aotObservation.getSensorPath() != null) {
+                                        med.setText(aotObservation.getValue(useImperialUnits).toString());
+                                    }
+                                })
+                );
+                DisposablesManager.add(
+                        AOTService.filterObservations(nodes.get(i).getObservations(), sensorType, apiStartDate, apiEndDate)
+                                .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "max"))
+                                .subscribe(aotObservation -> {
+                                    if (aotObservation != null && aotObservation.getSensorPath() != null) {
+                                        max.setText(aotObservation.getValue(useImperialUnits).toString());
+                                    }
+                                })
+                );
 
                 GraphView graph = (GraphView) l.findViewById(R.id.graph1);
                 graph.removeAllSeries();
@@ -878,8 +994,8 @@ public class MainActivity extends AppCompatActivity
                 value1u.setText(observation.getUnits(useImperialUnits));
             }
             else {
-                value1.setText("NF");
-                value1u.setText("TEMP");
+                value1.setText("No Data");
+                value1u.setText("");
             }
 
             observation = aotN.getAggregatedObservations().get(AOTSensorType.PRESSURE);
@@ -889,8 +1005,8 @@ public class MainActivity extends AppCompatActivity
                 value3u.setText(observation.getUnits(useImperialUnits));
             }
             else {
-                value3.setText("NF");
-                value3u.setText("PRES");
+                value3.setText("No Data");
+                value3u.setText("");
             }
 
             observation = aotN.getAggregatedObservations().get(AOTSensorType.HUMIDITY);
@@ -899,8 +1015,8 @@ public class MainActivity extends AppCompatActivity
                 value4u.setText(observation.getUnits(useImperialUnits));
             }
             else {
-                value4.setText("NF");
-                value4u.setText("HUM");
+                value4.setText("No Data");
+                value4u.setText("");
             }
 
         }
@@ -919,8 +1035,8 @@ public class MainActivity extends AppCompatActivity
                 value1u.setText(observation.getUnits(useImperialUnits));
             }
             else {
-                value1.setText("NF");
-                value1u.setText("VL");
+                value1.setText("No Data");
+                value1u.setText("");
             }
 
             observation = aotN.getAggregatedObservations().get(AOTSensorType.INFRA_RED_LIGHT);
@@ -929,8 +1045,8 @@ public class MainActivity extends AppCompatActivity
                 value3u.setText(observation.getUnits(useImperialUnits));
             }
             else {
-                value3.setText("NF");
-                value3u.setText("IRL");
+                value3.setText("No Data");
+                value3u.setText("");
             }
 
             observation = aotN.getAggregatedObservations().get(AOTSensorType.ULTRA_VIOLET_LIGHT);
@@ -939,8 +1055,8 @@ public class MainActivity extends AppCompatActivity
                 value4u.setText(observation.getUnits(useImperialUnits));
             }
             else {
-                value4.setText("NF");
-                value4u.setText("UVL");
+                value4.setText("No Data");
+                value4u.setText("");
             }
 
         }
@@ -960,8 +1076,8 @@ public class MainActivity extends AppCompatActivity
                 value1u.setText(observation.getUnits(useImperialUnits));
             }
             else {
-                value1.setText("NF");
-                value1u.setText("CO");
+                value1.setText("No Data");
+                value1u.setText("");
             }
 
             observation = aotN.getAggregatedObservations().get(AOTSensorType.SULPHUR_DIOXIDE);
@@ -970,8 +1086,8 @@ public class MainActivity extends AppCompatActivity
                 value3u.setText(observation.getUnits(useImperialUnits));
             }
             else {
-                value3.setText("NF");
-                value3u.setText("SO2");
+                value3.setText("No Data");
+                value3u.setText("");
             }
 
             observation = aotN.getAggregatedObservations().get(AOTSensorType.NITROGEN_DIOXIDE);
@@ -980,8 +1096,8 @@ public class MainActivity extends AppCompatActivity
                 value4u.setText(observation.getUnits(useImperialUnits));
             }
             else {
-                value4.setText("NF");
-                value4u.setText("NO2");
+                value4.setText("No Data");
+                value4u.setText("");
             }
         }
     }
