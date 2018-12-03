@@ -253,6 +253,7 @@ public class MainActivity extends AppCompatActivity
         menuOptionSelected="weather";
 
         coordinatorLayout = findViewById(R.id.coordinator);
+        showProgressView("Starting App...");
 
         ImageView imgClose = (ImageView) findViewById(R.id.close);
         imgClose.setOnClickListener(new View.OnClickListener() {
