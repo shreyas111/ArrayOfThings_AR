@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,6 +47,8 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -125,6 +128,10 @@ public class MainActivity extends AppCompatActivity
     public void initializeAndCallAPI()
     {
         showProgressView("Finding nearby nodes ...");
+
+        AtomicBoolean everythingIsDone = new AtomicBoolean(false);
+        AtomicBoolean handlerCalled = new AtomicBoolean(false);
+
         DisposablesManager.add(
                 AOTService.fetchObservationsFromNearbyNodes(longitude, latitude, distance, apiStartDate, apiEndDate)
                         .subscribeOn(Schedulers.io())
@@ -143,7 +150,13 @@ public class MainActivity extends AppCompatActivity
                                         Log.i(TAG, "node has: " + node.getObservations().size() + " observations from " + node.getSensors().size() + " sensors");
 
                                         if (!node.getObservations().isEmpty()) {
-                                            filterAndAggregateObservations(node);
+                                            filterAndAggregateObservations(node, aotNode -> {
+                                                if(everythingIsDone.get() && !handlerCalled.get()) {
+                                                    handlerCalled.set(true);
+                                                    handleCompleteableFutures();
+                                                }
+                                                return null;
+                                            });
                                         }
                                     }
                                 },
@@ -153,13 +166,14 @@ public class MainActivity extends AppCompatActivity
                                 },
                                 () -> {
                                     Log.i(TAG, "Finished fetching nearby nodes");
-                                    handleCompleteableFutures();
+                                    everythingIsDone.set(true);
+//                                    handleCompleteableFutures();
                                 }
                         )
         );
     }
 
-    private void filterAndAggregateObservations(AOTNode node) {
+    private void filterAndAggregateObservations(AOTNode node, Function<AOTNode, Void> onComplete) {
         List<Observable<List<AOTObservation>>> filterCalls = new ArrayList<>();
         for(AOTSensorType aSensorType: AOTSensorType.values()) {
             filterCalls.add(AOTService.filterObservations(node.getObservations(), aSensorType, filterStartDate, filterEndDate).toObservable());
@@ -179,7 +193,8 @@ public class MainActivity extends AppCompatActivity
                                         node.getAggregatedObservations().put(aotObservation.getSensorType(), null);
                                     }
                                 },
-                                throwable -> Log.e(TAG, "Error while filtering/aggregating observations:", throwable)
+                                throwable -> Log.e(TAG, "Error while filtering/aggregating observations:", throwable),
+                                () -> onComplete.apply(node)
                         )
         );
 //                                                            })
@@ -270,8 +285,8 @@ public class MainActivity extends AppCompatActivity
         timePicker.setValue(calendar.get(Calendar.HOUR_OF_DAY));
         isInitial = false;
 
-        distance = PreferenceManager.getDefaultSharedPreferences(this).getInt("distanceThreshold", 2000);
-        useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("useImperialUnits", false);
+        distance = PreferenceManager.getDefaultSharedPreferences(this).getInt(getResources().getString(R.string.settings_key_distanceThreshold), 2000);
+        useImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(getResources().getString(R.string.settings_key_useImperialUnits), false);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -294,7 +309,7 @@ public class MainActivity extends AppCompatActivity
                             if (!hasFinishedLoading) {
                                 return;
                             }
-                            Log.i(TAG, "Finished loading models.");
+
                             if (locationScene == null) {
                                 // If our locationScene object hasn't been setup yet, this is a good time to do it
                                 // We know that here, the AR components have been initiated.
@@ -711,6 +726,27 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
+        Integer newDistance = PreferenceManager.getDefaultSharedPreferences(this).getInt(getResources().getString(R.string.settings_key_distanceThreshold), 2000);
+        boolean distanceChanged = newDistance != distance;
+
+        Boolean newUseImperialUnits = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(getResources().getString(R.string.settings_key_useImperialUnits), false);
+        boolean unitsChanged = newUseImperialUnits != useImperialUnits;
+
+        distance = newDistance;
+        useImperialUnits = newUseImperialUnits;
+
+//        final Handler handler = new Handler();
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+                if (distanceChanged) {
+                    refresh();
+                } else if (unitsChanged) {
+                    setTime(timePicker.getValue(), true);
+                }
+//            }
+//        }, 1000);
+
 //        if (arSceneView.getSession() != null) {
 //            showLoadingMessage();
 //        }
@@ -1057,10 +1093,11 @@ public class MainActivity extends AppCompatActivity
         if(shouldRefresh) {
             if (markersAdded) {
                 for (AOTNode node : nodes) {
-                    filterAndAggregateObservations(node);
-                }
-                for (int i = 0; i < nodes.size(); i++) {
-                    setInnerLayoutValues(exampleLayoutRenderables.get(i), nodes.get(i), i);
+                    filterAndAggregateObservations(node, aotNode -> {
+                        int i = nodes.indexOf(aotNode);
+                        setInnerLayoutValues(exampleLayoutRenderables.get(i), aotNode, i);
+                        return null;
+                    });
                 }
             } else {
                 Toast.makeText(
@@ -1091,23 +1128,28 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showProgressView(String message) {
-        if (progressViewSnackbar != null && progressViewSnackbar.isShownOrQueued()) {
-            progressViewSnackbar.setText(message);
-            return;
+        if(progressViewSnackbar == null) {
+            coordinatorLayout = findViewById(R.id.coordinator);
+            progressViewSnackbar = Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_INDEFINITE);
+            ViewGroup contentLay = (ViewGroup) progressViewSnackbar.getView().findViewById(com.google.android.material.R.id.snackbar_text).getParent();
+            ProgressBar item = new ProgressBar(contentLay.getContext());
+            contentLay.addView(item,0);
         }
-        progressViewSnackbar = Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_INDEFINITE);
-        ViewGroup contentLay = (ViewGroup) progressViewSnackbar.getView().findViewById(com.google.android.material.R.id.snackbar_text).getParent();
-        ProgressBar item = new ProgressBar(contentLay.getContext());
-        contentLay.addView(item,0);
+        else {
+            progressViewSnackbar.setText(message);
+        }
 
-        progressViewSnackbar.show();
-        Log.d(TAG, "Showing progress view");
+        if (!progressViewSnackbar.isShownOrQueued()) {
+            progressViewSnackbar.show();
+            Log.d(TAG, "Showing progress view");
+        }
     }
 
     private void hideProgressView() {
-        if(progressViewSnackbar != null) {
+        if(progressViewSnackbar != null && progressViewSnackbar.isShownOrQueued()) {
             progressViewSnackbar.dismiss();
+            progressViewSnackbar = null;
+            Log.d(TAG, "Hiding progress view");
         }
-        Log.d(TAG, "Hiding progress view");
     }
 }
