@@ -2,8 +2,6 @@ package aot.cs491.com.aot_ar.utils;
 
 import android.util.Log;
 
-import aot.cs491.com.aot_ar.aothttpapi.AOTService;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -12,9 +10,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+
+import aot.cs491.com.aot_ar.aothttpapi.AOTService;
 
 public class Utils {
     private static final String TAG = Utils.class.getSimpleName();
@@ -162,14 +160,12 @@ public class Utils {
     public static <T> Float medianOfItems(List<T> items, Function<T, Float> key) {
         int itemsSize = items.size();
 
-        if(itemsSize == 0) {
+        if (itemsSize == 0) {
             return Float.NaN;
-        }
-        else if(itemsSize % 2 == 0) {
+        } else if (itemsSize % 2 == 0) {
             int mid = itemsSize / 2;
             return (key.apply(items.get(mid)) + key.apply(items.get(mid + 1))) / 2f;
-        }
-        else {
+        } else {
             return key.apply(items.get(itemsSize / 2));
         }
     }
@@ -180,13 +176,13 @@ public class Utils {
         Integer maxValueFrequency = 0;
         Float maxValue = Float.NaN;
 
-        for(T anItem: items) {
+        for (T anItem : items) {
             Float value = key.apply(anItem);
             Integer valueFrequency = frequencies.getOrDefault(value, 0) + 1;
 
             frequencies.put(value, valueFrequency);
 
-            if(maxValue.isNaN() || valueFrequency > maxValueFrequency) {
+            if (maxValue.isNaN() || valueFrequency > maxValueFrequency) {
                 maxValue = value;
                 maxValueFrequency = valueFrequency;
             }
@@ -234,11 +230,13 @@ public class Utils {
         return hPaValue * 0.02953f;
     }
 
-    public static Float kilometersToMiles(Float kilometerValue) { return kilometerValue * 0.62137119f; }
+    public static Float kilometersToMiles(Float kilometerValue) {
+        return kilometerValue * 0.62137119f;
+    }
 
     // ======== OTHERS =============
 
     public static Float round(Float number) {
-        return number.isNaN() || number.isInfinite() ? number : Math.round(number * 100)/100f;
+        return number.isNaN() || number.isInfinite() ? number : Math.round(number * 100) / 100f;
     }
 }

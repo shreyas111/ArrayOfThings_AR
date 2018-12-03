@@ -5,9 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -460,6 +464,9 @@ public class MainActivity extends AppCompatActivity
                 LinearLayout l = (LinearLayout) v.getParent().getParent().getParent().getParent();
                 l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.GONE);
                 l.findViewById(R.id.aggregate_layout_id).setVisibility(LinearLayout.GONE);
+
+
+                vibrate();
             }
         });
 
@@ -555,6 +562,9 @@ public class MainActivity extends AppCompatActivity
                 LineGraphSeries<DataPoint> series = new LineGraphSeries<>(da);
                 graph.addSeries(series);
                 styleGraph(graph, series);
+
+
+                vibrate();
             }
         });
 
@@ -649,6 +659,9 @@ public class MainActivity extends AppCompatActivity
                 LineGraphSeries<DataPoint> series = new LineGraphSeries<>(da);
                 graph.addSeries(series);
                 styleGraph(graph, series);
+
+
+                vibrate();
             }
         });
 
@@ -748,6 +761,9 @@ public class MainActivity extends AppCompatActivity
                 LineGraphSeries<DataPoint> series = new LineGraphSeries<>(da);
                 graph.addSeries(series);
                 styleGraph(graph, series);
+
+
+                vibrate();
             }
         });
 
@@ -1207,10 +1223,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void hideProgressView() {
-        if(progressViewSnackbar != null && progressViewSnackbar.isShownOrQueued()) {
-            progressViewSnackbar.dismiss();
-            progressViewSnackbar = null;
-            Log.d(TAG, "Hiding progress view");
-        }
+        new Handler().postDelayed(() -> {
+            if (progressViewSnackbar != null && progressViewSnackbar.isShownOrQueued()) {
+                progressViewSnackbar.dismiss();
+                progressViewSnackbar = null;
+                vibrate(100);
+                Log.d(TAG, "Hiding progress view");
+            }
+        }, 6000);
+    }
+
+    private void vibrate() {
+        vibrate(10);
+    }
+    private void vibrate(int durationInMillis) {
+        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        vibrator.vibrate(VibrationEffect.createOneShot(durationInMillis, VibrationEffect.DEFAULT_AMPLITUDE));
     }
 }
