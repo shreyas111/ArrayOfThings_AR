@@ -458,6 +458,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 LinearLayout l = (LinearLayout) v.getParent().getParent().getParent().getParent();
                 l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.GONE);
+                l.findViewById(R.id.aggregate_layout_id).setVisibility(LinearLayout.GONE);
 
                 Toast.makeText(
                         c, "Distance Marker Touched." + i, Toast.LENGTH_LONG)

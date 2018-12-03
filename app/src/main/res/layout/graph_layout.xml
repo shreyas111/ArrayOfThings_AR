@@ -20,6 +20,7 @@
         app:layout_constraintHorizontal_bias="0.482"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.017" />
+        app:layout_constraintVertical_bias="0.017"
+        style="@style/TextShadow"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
