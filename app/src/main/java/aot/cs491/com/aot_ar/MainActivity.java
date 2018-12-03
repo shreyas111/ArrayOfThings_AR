@@ -583,6 +583,8 @@ public class MainActivity extends AppCompatActivity
                 compLayout.setVisibility(LinearLayout.VISIBLE);
                 clearComparisonLayoutValues(compLayout);
                 fillComparisonLayoutValues(compLayout,eView, i);
+
+                vibrate(50);
                 return false;
             }
         });
@@ -1363,7 +1365,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void vibrate() {
-        vibrate(20);
+        vibrate(15);
     }
     private void vibrate(int durationInMillis) {
         Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
