@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -37,6 +38,8 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.shawnlin.numberpicker.NumberPicker;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -225,6 +228,13 @@ public class MainActivity extends AppCompatActivity
             finish();
         }
     }
+    public void closeComparisonLayout()
+    {
+        View compLayout = findViewById(R.id.comparison_layout_id);
+        clearComparisonLayoutValues(compLayout);
+        compLayout.setVisibility(LinearLayout.GONE);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Revert to default theme which was changed for showing launch screen
@@ -236,6 +246,15 @@ public class MainActivity extends AppCompatActivity
         menuOptionSelected="weather";
 
         coordinatorLayout = findViewById(R.id.coordinator);
+
+        ImageView imgClose = (ImageView) findViewById(R.id.close);
+        imgClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                closeComparisonLayout();
+            }
+        });
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -281,6 +300,7 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.getMenu().getItem(1).setChecked(true);
         navigationView.setNavigationItemSelectedListener(this);
 
         // Set an update listener on the Scene that will hide the loading message once a Plane is
@@ -389,12 +409,14 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        for(int i=0; i<nodes.size();i++)
-        {
-            View eView = exampleLayoutRenderables.get(i).getView();
-            View vgraph= eView.findViewById(R.id.graph_layout_id);
-            vgraph.setVisibility(LinearLayout.GONE);
-            eView.findViewById(R.id.aggregate_layout_id).setVisibility(LinearLayout.GONE);
+        closeComparisonLayout();
+        if(markersAdded) {
+            for (int i = 0; i < nodes.size(); i++) {
+                View eView = exampleLayoutRenderables.get(i).getView();
+                View vgraph = eView.findViewById(R.id.graph_layout_id);
+                vgraph.setVisibility(LinearLayout.GONE);
+                eView.findViewById(R.id.aggregate_layout_id).setVisibility(LinearLayout.GONE);
+            }
         }
         if (id == R.id.nav_light) {
             menuOptionSelected="light";
@@ -424,6 +446,114 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    private void clearComparisonLayoutValues(View compLayout)
+    {
+        TextView nodeName=compLayout.findViewById(R.id.comptext1);
+        TextView compDate =compLayout.findViewById(R.id.comptext2);
+        TextView lbl1=compLayout.findViewById(R.id.comptext3);
+        TextView val1=compLayout.findViewById(R.id.comptext4);
+        TextView unit1=compLayout.findViewById(R.id.comptext5);
+        TextView lbl2=compLayout.findViewById(R.id.comptext6);
+        TextView val2=compLayout.findViewById(R.id.comptext7);
+        TextView unit2=compLayout.findViewById(R.id.comptext8);
+        TextView lbl3=compLayout.findViewById(R.id.comptext9);
+        TextView val3=compLayout.findViewById(R.id.comptext10);
+        TextView unit3=compLayout.findViewById(R.id.comptext11);
+
+        nodeName.setText("");
+        compDate.setText("");
+        lbl1.setText("");
+        val1.setText("");
+        unit1.setText("");
+        lbl2.setText("");
+        val2.setText("");
+        unit2.setText("");
+        lbl3.setText("");
+        val3.setText("");
+        unit3.setText("");
+    }
+
+    public void fillComparisonLayoutValues(View compLayout, View eView, int i)
+    {
+        TextView nodeName=compLayout.findViewById(R.id.comptext1);
+        TextView compDate =compLayout.findViewById(R.id.comptext2);
+        TextView lbl1=compLayout.findViewById(R.id.comptext3);
+        TextView val1=compLayout.findViewById(R.id.comptext4);
+        TextView unit1=compLayout.findViewById(R.id.comptext5);
+        TextView lbl2=compLayout.findViewById(R.id.comptext6);
+        TextView val2=compLayout.findViewById(R.id.comptext7);
+        TextView unit2=compLayout.findViewById(R.id.comptext8);
+        TextView lbl3=compLayout.findViewById(R.id.comptext9);
+        TextView val3=compLayout.findViewById(R.id.comptext10);
+        TextView unit3=compLayout.findViewById(R.id.comptext11);
+
+        TextView location =eView.findViewById(R.id.textView_loc1);
+        //nodeName.setText("Node " + i);
+        nodeName.setText(location.getText().toString());
+        compDate.setText(Utils.dateToString(filterStartDate,"MMM d, ''yy\nh a", TimeZone.getDefault()));
+        if(menuOptionSelected=="weather") {
+            lbl1.setText("TEMPRATURE");
+            TextView value1=eView.findViewById(R.id.textView_temp);
+            val1.setText(value1.getText().toString());
+            TextView un1=eView.findViewById(R.id.textView_tempu);
+            unit1.setText(un1.getText().toString());
+
+            lbl2.setText("PRESSURE");
+            TextView value2=eView.findViewById(R.id.textView_pres);
+            val2.setText(value2.getText().toString());
+            TextView un2=eView.findViewById(R.id.textView_presu);
+            unit2.setText(un2.getText().toString());
+
+            lbl3.setText("HUMIDITY");
+            TextView value3=eView.findViewById(R.id.textView_hum);
+            val3.setText(value3.getText().toString());
+            TextView un3=eView.findViewById(R.id.textView_humu);
+            unit3.setText(un3.getText().toString());
+        }
+        else if(menuOptionSelected=="light")
+        {
+            lbl1.setText("LIGHT");
+            TextView value1=eView.findViewById(R.id.textView_temp);
+            val1.setText(value1.getText().toString());
+            TextView un1=eView.findViewById(R.id.textView_tempu);
+            unit1.setText(un1.getText().toString());
+
+            TextView value2=eView.findViewById(R.id.textView_pres);
+            lbl2.setText("IR LIGHT");
+            val2.setText(value2.getText().toString());
+            TextView un2=eView.findViewById(R.id.textView_presu);
+            unit2.setText(un2.getText().toString());
+
+            TextView value3=eView.findViewById(R.id.textView_hum);
+            lbl3.setText("UV LIGHT");
+            val3.setText(value3.getText().toString());
+            TextView un3=eView.findViewById(R.id.textView_humu);
+            unit3.setText(un3.getText().toString());
+        }
+        else if(menuOptionSelected=="airquality")
+        {
+            lbl1.setText("CO");
+            TextView value1=eView.findViewById(R.id.textView_temp);
+            val1.setText(value1.getText().toString());
+            TextView un1=eView.findViewById(R.id.textView_tempu);
+            unit1.setText(un1.getText().toString());
+
+            TextView value2=eView.findViewById(R.id.textView_pres);
+            lbl2.setText("SO2");
+            val2.setText(value2.getText().toString());
+            TextView un2=eView.findViewById(R.id.textView_presu);
+            unit2.setText(un2.getText().toString());
+
+            TextView value3=eView.findViewById(R.id.textView_hum);
+            lbl3.setText("NO2");
+            val3.setText(value3.getText().toString());
+            TextView un3=eView.findViewById(R.id.textView_humu);
+            unit3.setText(un3.getText().toString());
+        }
+
+    }
+
+
     private Node getExampleView(int i) {
         Node base = new Node();
         base.setRenderable(exampleLayoutRenderables.get(i));
@@ -434,22 +564,19 @@ public class MainActivity extends AppCompatActivity
         TextView textViewData2 = eView.findViewById(R.id.textView_pres);
         TextView textViewData3 = eView.findViewById(R.id.textView_hum);
         TextView textViewDistance = eView.findViewById(R.id.textView_dist1);
-        //View compLayout = findViewById(R.id.comp_layout_id);
+        View compLayout = findViewById(R.id.comparison_layout_id);
         //TextView compLayoutText1 = compLayout.findViewById(R.id.comptext1);
+
 
 
         eView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                // TODO Auto-generated method stub
-                //compLayout.setVisibility(LinearLayout.VISIBLE);
-//                for(int i=0; i<nodes.size();i++)
-//                {
-//                    View eView = exampleLayoutRenderables.get(i).getView();
-//                    View vgraph= eView.findViewById(R.id.graph_layout_id);
-//                    vgraph.setVisibility(LinearLayout.GONE);
-//
-//                }
+
+                compLayout.setVisibility(LinearLayout.VISIBLE);
+                clearComparisonLayoutValues(compLayout);
+                fillComparisonLayoutValues(compLayout,eView, i);
+
 
 
                 Toast.makeText(
