@@ -5,7 +5,7 @@
     android:id="@+id/linearLayout3"
     android:layout_width="200dp"
     android:layout_height="200dp"
-    android:background="#edbcaf">
+    android:background="@color/translucent">
 
     <TextView
         android:id="@+id/textView_loc1"
@@ -20,17 +20,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        style="@style/TextShadow"
-        tools:textColor="@color/black" />
+        style="@style/TextShadow"/>
+        <!--tools:textColor="@color/black" />-->
 
-    <TextView
+    <ImageView
         android:id="@+id/textView_T"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_marginStart="7dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="8dp"
-        android:background="@drawable/temperature"
+        android:src="@drawable/temperature"
+        android:tint="@color/colorAccentDark"
+        android:tintMode="src_atop"
         android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@+id/textView_D"
         app:layout_constraintStart_toStartOf="parent"
@@ -39,25 +41,30 @@
 
     <TextView
         android:id="@+id/textView_D"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="8dp"
-        android:background="@drawable/distance"
-        android:textSize="14sp"
+        android:background="@null"
+        android:textSize="12sp"
+        android:text="Light"
         app:layout_constraintEnd_toStartOf="@+id/textView_P"
         app:layout_constraintStart_toEndOf="@+id/textView_T"
         app:layout_constraintTop_toTopOf="parent"
         style="@style/TextShadow" />
 
+    <!--android:background="@drawable/pressure"-->
     <TextView
         android:id="@+id/textView_P"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
-        android:background="@drawable/pressure"
+        android:text="Pressure"
+        android:textColor="?android:attr/textColorPrimary"
+        android:backgroundTint="@color/colorAccentDark"
+        android:backgroundTintMode="src_atop"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.551"
@@ -72,7 +79,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="13dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/circle"
+
         android:gravity="center"
         android:textSize="14sp"
         tools:textColor="@color/black"
@@ -88,7 +95,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/circle"
+
         android:textSize="14sp"
         android:gravity="center"
         tools:textColor="@color/black"
@@ -104,7 +111,6 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/circle"
         android:gravity="center"
         tools:textColor="@color/black"
         style="@style/TextShadow"

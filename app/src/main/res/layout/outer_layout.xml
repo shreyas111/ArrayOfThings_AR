@@ -13,19 +13,23 @@
     <include android:id="@+id/graph_layout_id" layout="@layout/graph_layout"
         android:visibility="gone"/>
 </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_gravity="center"
-        android:gravity="center">
-        <include android:id="@+id/inner_layout_id" layout="@layout/inner_layout" />
-    </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:layout_gravity="center"
         android:gravity="center">
-        <include android:id="@+id/aggregate_layout_id" layout="@layout/aggregate_layout" />
+        <include android:id="@+id/aggregate_layout_id" layout="@layout/aggregate_layout"
+            android:visibility="gone"/>
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_gravity="center"
+        android:gravity="center">
+        <include android:id="@+id/inner_layout_id" layout="@layout/inner_layout1" />
+    </LinearLayout>
+
 
 </LinearLayout>

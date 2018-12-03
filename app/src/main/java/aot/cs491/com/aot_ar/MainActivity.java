@@ -461,13 +461,13 @@ public class MainActivity extends AppCompatActivity
             public boolean onLongClick(View v) {
                 // TODO Auto-generated method stub
                 //compLayout.setVisibility(LinearLayout.VISIBLE);
-                for(int i=0; i<nodes.size();i++)
-                {
-                    View eView = exampleLayoutRenderables.get(i).getView();
-                    View vgraph= eView.findViewById(R.id.graph_layout_id);
-                    vgraph.setVisibility(LinearLayout.GONE);
-
-                }
+//                for(int i=0; i<nodes.size();i++)
+//                {
+//                    View eView = exampleLayoutRenderables.get(i).getView();
+//                    View vgraph= eView.findViewById(R.id.graph_layout_id);
+//                    vgraph.setVisibility(LinearLayout.GONE);
+//
+//                }
 
 
                 Toast.makeText(
@@ -480,7 +480,7 @@ public class MainActivity extends AppCompatActivity
         textViewDistance.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LinearLayout l = (LinearLayout) v.getParent().getParent().getParent();
+                LinearLayout l = (LinearLayout) v.getParent().getParent().getParent().getParent();
                 l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.GONE);
 
                 Toast.makeText(
@@ -493,8 +493,44 @@ public class MainActivity extends AppCompatActivity
         textViewData1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LinearLayout l=(LinearLayout) v.getParent().getParent().getParent();
+                LinearLayout l=(LinearLayout) v.getParent().getParent().getParent().getParent().getParent();
                 l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.VISIBLE);
+                l.findViewById(R.id.aggregate_layout_id).setVisibility(LinearLayout.VISIBLE);
+
+                TextView min =l.findViewById(R.id.textViewMinVal);
+                TextView med =l.findViewById(R.id.textViewMedVal);
+                TextView max =l.findViewById(R.id.textViewMaxVal);
+
+                AOTSensorType sensorType;
+                DisposablesManager.add(
+                    AOTService.filterObservations(nodes.get(i).getObservations(), AOTSensorType.TEMPERATURE, apiStartDate, apiEndDate)
+                            .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "min"))
+                            .subscribe(aotObservation -> {
+                                min.setText(aotObservation.getValue().toString());
+                            })
+                );
+
+                DisposablesManager.add(
+                        AOTService.filterObservations(nodes.get(i).getObservations(), AOTSensorType.TEMPERATURE, apiStartDate, apiEndDate)
+                                .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "median"))
+                                .subscribe(aotObservation -> {
+                                    med.setText(aotObservation.getValue().toString());
+                                })
+                );
+                DisposablesManager.add(
+                        AOTService.filterObservations(nodes.get(i).getObservations(), AOTSensorType.TEMPERATURE, apiStartDate, apiEndDate)
+                                .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "max"))
+                                .subscribe(aotObservation -> {
+                                    max.setText(aotObservation.getValue().toString());
+                                })
+                );
+
+
+
+
+
+
+
                 GraphView graph = (GraphView) l.findViewById(R.id.graph1);
                 graph.removeAllSeries();
                 ArrayList <DataPoint> dataPointsList = new ArrayList<DataPoint>();
@@ -533,8 +569,10 @@ public class MainActivity extends AppCompatActivity
         textViewData2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LinearLayout l=(LinearLayout) v.getParent().getParent().getParent();
+                LinearLayout l=(LinearLayout) v.getParent().getParent().getParent().getParent().getParent();
                 l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.VISIBLE);
+                l.findViewById(R.id.aggregate_layout_id).setVisibility(LinearLayout.VISIBLE);
+
                 GraphView graph = (GraphView) l.findViewById(R.id.graph1);
                 graph.removeAllSeries();
                 ArrayList <DataPoint> dataPointsList = new ArrayList<DataPoint>();
@@ -573,12 +611,13 @@ public class MainActivity extends AppCompatActivity
         textViewData3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LinearLayout l=(LinearLayout) v.getParent().getParent().getParent();
-                if (l.findViewById(R.id.graph_layout_id).getVisibility() == View.GONE) {
+                LinearLayout l=(LinearLayout) v.getParent().getParent().getParent().getParent().getParent();
+//                if (l.findViewById(R.id.graph_layout_id).getVisibility() == View.GONE) {
                     l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.VISIBLE);
-                } else if (l.findViewById(R.id.graph_layout_id).getVisibility() == View.VISIBLE){
-                    l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.GONE);
-                }
+                    l.findViewById(R.id.aggregate_layout_id).setVisibility(LinearLayout.VISIBLE);
+//                } else if (l.findViewById(R.id.graph_layout_id).getVisibility() == View.VISIBLE){
+//                    l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.GONE);
+//                }
 
                 GraphView graph = (GraphView) l.findViewById(R.id.graph1);
                 graph.removeAllSeries();
@@ -843,72 +882,141 @@ public class MainActivity extends AppCompatActivity
     {
         View eView = vr.getView();
         TextView nameView = eView.findViewById(R.id.textView_loc1);
+        TextView value1l = eView.findViewById(R.id.textView_T);
+        TextView value3l = eView.findViewById(R.id.textView_P);
+        TextView value4l = eView.findViewById(R.id.textView_H);
+
         TextView value1 = eView.findViewById(R.id.textView_temp);
         TextView value3 = eView.findViewById(R.id.textView_pres);
         TextView value4 = eView.findViewById(R.id.textView_hum);
+
+        TextView value1u = eView.findViewById(R.id.textView_tempu);
+        TextView value3u = eView.findViewById(R.id.textView_presu);
+        TextView value4u = eView.findViewById(R.id.textView_humu);
         nameView.setText(aotN.getAddress());
         AOTObservation observation;
         if(menuOptionSelected=="weather") {
 
+            value1l.setBackgroundResource(R.drawable.temperature);
+            value1l.setText(null);
+            value3l.setBackgroundResource(R.drawable.pressure);
+            value3l.setText(null);
+            value4l.setBackgroundResource(R.drawable.humidity);
+            value4l.setText(null);
+
             observation = aotN.getAggregatedObservations().get(AOTSensorType.TEMPERATURE);
-            if(observation !=null)
-                value1.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
-            else
+            if(observation !=null) {
+                //value1.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
+
+                value1.setText(observation.getValue(useImperialUnits).toString());
+                value1u.setText(observation.getUnits(useImperialUnits));
+            }
+            else {
                 value1.setText("NF");
+                value1u.setText("TEMP");
+            }
 
             observation = aotN.getAggregatedObservations().get(AOTSensorType.PRESSURE);
-            if(observation !=null)
-                value3.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
-            else
+            if(observation !=null) {
+
+                value3.setText(observation.getValue(useImperialUnits).toString());
+                value3u.setText(observation.getUnits(useImperialUnits));
+            }
+            else {
                 value3.setText("NF");
+                value3u.setText("PRES");
+            }
 
             observation = aotN.getAggregatedObservations().get(AOTSensorType.HUMIDITY);
-            if(observation !=null)
-                value4.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
-            else
+            if(observation !=null) {
+                value4.setText(observation.getValue(useImperialUnits).toString());
+                value4u.setText(observation.getUnits(useImperialUnits));
+            }
+            else {
                 value4.setText("NF");
+                value4u.setText("HUM");
+            }
 
         }
         if(menuOptionSelected=="light") {
+            value1l.setBackgroundResource(0);
+            value1l.setText("LIGHT");
+            value3l.setBackgroundResource(0);
+            value3l.setText("IR");
+            value4l.setBackgroundResource(0);
+            value4l.setText("UV");
 
             observation = aotN.getAggregatedObservations().get(AOTSensorType.LIGHT_INTENSITY);
-            if(observation !=null)
-                value1.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
-            else
+            if(observation !=null) {
+
+                value1.setText(observation.getValue(useImperialUnits).toString());
+                value1u.setText(observation.getUnits(useImperialUnits));
+            }
+            else {
                 value1.setText("NF");
+                value1u.setText("VL");
+            }
 
             observation = aotN.getAggregatedObservations().get(AOTSensorType.INFRA_RED_LIGHT);
-            if(observation !=null)
-                value3.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
-            else
+            if(observation !=null) {
+                value3.setText(observation.getValue(useImperialUnits).toString());
+                value3u.setText(observation.getUnits(useImperialUnits));
+            }
+            else {
                 value3.setText("NF");
+                value3u.setText("IRL");
+            }
 
             observation = aotN.getAggregatedObservations().get(AOTSensorType.ULTRA_VIOLET_LIGHT);
-            if(observation !=null)
-                value4.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
-            else
+            if(observation !=null) {
+                value4.setText(observation.getValue(useImperialUnits).toString());
+                value4u.setText(observation.getUnits(useImperialUnits));
+            }
+            else {
                 value4.setText("NF");
+                value4u.setText("UVL");
+            }
 
         }
         if(menuOptionSelected=="airquality") {
 
+            value1l.setBackgroundResource(0);
+            value1l.setText("CO");
+            value3l.setBackgroundResource(0);
+            value3l.setText("SO2");
+            value4l.setBackgroundResource(0);
+            value4l.setText("NO2");
+
+
             observation = aotN.getAggregatedObservations().get(AOTSensorType.CARBON_MONOXIDE);
-            if(observation !=null)
-                value1.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
-            else
+            if(observation !=null) {
+                value1.setText(observation.getValue(useImperialUnits).toString());
+                value1u.setText(observation.getUnits(useImperialUnits));
+            }
+            else {
                 value1.setText("NF");
+                value1u.setText("CO");
+            }
 
             observation = aotN.getAggregatedObservations().get(AOTSensorType.SULPHUR_DIOXIDE);
-            if(observation !=null)
-                value3.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
-            else
+            if(observation !=null) {
+                value3.setText(observation.getValue(useImperialUnits).toString());
+                value3u.setText(observation.getUnits(useImperialUnits));
+            }
+            else {
                 value3.setText("NF");
+                value3u.setText("SO2");
+            }
 
             observation = aotN.getAggregatedObservations().get(AOTSensorType.NITROGEN_DIOXIDE);
-            if(observation !=null)
-                value4.setText(observation.getValue(useImperialUnits).toString() + observation.getUnits(useImperialUnits));
-            else
+            if(observation !=null) {
+                value4.setText(observation.getValue(useImperialUnits).toString());
+                value4u.setText(observation.getUnits(useImperialUnits));
+            }
+            else {
                 value4.setText("NF");
+                value4u.setText("NO2");
+            }
         }
     }
     public void setInnerLayoutValuesFromMenu()

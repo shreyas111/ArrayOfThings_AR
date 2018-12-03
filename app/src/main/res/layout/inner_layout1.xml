@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="200dp"
+    android:layout_height="200dp"
+    android:orientation="vertical"
+    android:id="@+id/innerlayout1"
+    android:background="@color/translucent"
+    android:layout_gravity="center">
+
+    <TextView
+        android:id="@+id/textView_loc1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:text="dist"
+        android:textSize="12sp"
+        style="@style/TextShadow"/>
+
+    <TextView
+        android:id="@+id/textView_dist1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_gravity="center_horizontal"
+        android:textSize="12sp"
+        android:gravity="center"
+        style="@style/TextShadow"
+        android:background="@drawable/circle"/>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="125dp"
+            android:orientation="horizontal"
+            android:layout_gravity="center">
+
+            <LinearLayout
+                android:layout_width="55dp"
+                android:layout_height="110dp"
+                android:layout_marginStart="5dp"
+                android:layout_margin="5dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_T"
+                    style="@style/TextShadow"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/temperature"
+                    android:backgroundTint="@color/colorAccentDark"
+                    android:backgroundTintMode="src_atop"
+                    android:text="@null"
+                    android:textColor="@color/colorAccentDark"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/textView_temp"
+                    style="@style/TextShadow"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center"
+                    android:text="88.888"
+                    android:textSize="12sp"
+                    android:background="@drawable/circle"
+                    android:backgroundTintMode="src_atop"/>
+
+                <TextView
+                    android:id="@+id/textView_tempu"
+                    style="@style/TextShadow"
+                    android:layout_width="40dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center"
+                    android:text="abc"
+                    android:textSize="12sp"></TextView>
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="55dp"
+                android:layout_height="110dp"
+                android:layout_marginStart="5dp"
+                android:layout_margin="5dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_P"
+                    style="@style/TextShadow"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/pressure"
+                    android:backgroundTint="@color/colorAccentDark"
+                    android:backgroundTintMode="src_atop"
+                    android:text="@null"
+                    android:textColor="@color/colorAccentDark"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/textView_pres"
+                    style="@style/TextShadow"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center"
+                    android:text="88.888"
+                    android:textSize="12sp"
+                    android:background="@drawable/circle"
+                    android:backgroundTintMode="src_atop"/>
+
+                <TextView
+                    android:id="@+id/textView_presu"
+                    style="@style/TextShadow"
+                    android:layout_width="40dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center"
+                    android:text="abc"
+                    android:textSize="12sp"></TextView>
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="55dp"
+                android:layout_height="110dp"
+                android:layout_marginStart="5dp"
+                android:layout_margin="5dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_H"
+                    style="@style/TextShadow"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@null"
+                    android:backgroundTint="@color/colorAccentDark"
+                    android:backgroundTintMode="src_atop"
+                    android:text="HUM"
+                    android:textColor="@color/colorAccentDark"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:id="@+id/textView_hum"
+                    style="@style/TextShadow"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center"
+                    android:text="88.888"
+                    android:textSize="12sp"
+                    android:background="@drawable/circle"
+                    android:backgroundTintMode="src_atop"/>
+
+                <TextView
+                    android:id="@+id/textView_humu"
+                    style="@style/TextShadow"
+                    android:layout_width="40dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center"
+                    android:text="abc"
+                    android:textSize="12sp"></TextView>
+            </LinearLayout>
+        </LinearLayout>
+</LinearLayout>
