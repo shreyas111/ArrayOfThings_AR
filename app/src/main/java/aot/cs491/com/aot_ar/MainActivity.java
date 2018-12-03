@@ -34,8 +34,10 @@ import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
+import com.jjoe64.graphview.series.Series;
 import com.shawnlin.numberpicker.NumberPicker;
 
 import java.util.ArrayList;
@@ -450,11 +452,6 @@ public class MainActivity extends AppCompatActivity
 //                    vgraph.setVisibility(LinearLayout.GONE);
 //
 //                }
-
-
-                Toast.makeText(
-                        c, "Location Marker Long Pressed.", Toast.LENGTH_LONG)
-                        .show();
                 return false;
             }
         });
@@ -465,11 +462,6 @@ public class MainActivity extends AppCompatActivity
                 LinearLayout l = (LinearLayout) v.getParent().getParent().getParent().getParent();
                 l.findViewById(R.id.graph_layout_id).setVisibility(LinearLayout.GONE);
                 l.findViewById(R.id.aggregate_layout_id).setVisibility(LinearLayout.GONE);
-
-                Toast.makeText(
-                        c, "Distance Marker Touched." + i, Toast.LENGTH_LONG)
-                        .show();
-                return ;
             }
         });
 
@@ -564,11 +556,7 @@ public class MainActivity extends AppCompatActivity
                 DataPoint da[]=  dataPointsList.toArray(new DataPoint[dataPointsList.size()]);
                 LineGraphSeries<DataPoint> series = new LineGraphSeries<>(da);
                 graph.addSeries(series);
-
-                Toast.makeText(
-                    c, "Temp marker touched." + i, Toast.LENGTH_LONG)
-                    .show();
-                 return ;
+                styleGraph(graph, series);
             }
         });
 
@@ -662,11 +650,7 @@ public class MainActivity extends AppCompatActivity
                 DataPoint da[]=  dataPointsList.toArray(new DataPoint[dataPointsList.size()]);
                 LineGraphSeries<DataPoint> series = new LineGraphSeries<>(da);
                 graph.addSeries(series);
-
-                Toast.makeText(
-                        c, "Pressure Marker Touched." + i, Toast.LENGTH_LONG)
-                        .show();
-                return ;
+                styleGraph(graph, series);
             }
         });
 
@@ -765,16 +749,26 @@ public class MainActivity extends AppCompatActivity
                 DataPoint da[]=  dataPointsList.toArray(new DataPoint[dataPointsList.size()]);
                 LineGraphSeries<DataPoint> series = new LineGraphSeries<>(da);
                 graph.addSeries(series);
-
-                Toast.makeText(
-                        c, "Humidity Marker Touched." + i, Toast.LENGTH_LONG)
-                        .show();
-                return ;
+                styleGraph(graph, series);
             }
         });
 
 
         return base;
+    }
+
+    private void styleGraph(GraphView graph, LineGraphSeries series) {
+        graph.setTitle("TREND");
+        graph.setTitleColor(getColor(R.color.colorAccentDark));
+        graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(MainActivity.this));
+        graph.getGridLabelRenderer().setNumHorizontalLabels(4);
+        graph.getViewport().setMinX(apiStartDate.getTime());
+        graph.getViewport().setMaxX(apiEndDate.getTime());
+        graph.getViewport().setXAxisBoundsManual(true);
+
+        if(series != null) {
+            series.setColor(getColor(R.color.colorAccent));
+        }
     }
 
     /**
@@ -958,7 +952,9 @@ public class MainActivity extends AppCompatActivity
             public void render(LocationNode node) {
                 View eView = vr.getView();
                 TextView value2 = eView.findViewById(R.id.textView_dist1);
-                value2.setText(node.getDistance() + "M");
+                Float distanceInKilometers = node.getDistance() / 1000f;
+                Float distanceValue = useImperialUnits ? Utils.kilometersToMiles(distanceInKilometers) : distanceInKilometers;
+                value2.setText(Utils.round(distanceValue).toString() + (useImperialUnits ? " mi" : " km"));
 
             }
         });

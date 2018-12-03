@@ -234,6 +234,8 @@ public class Utils {
         return hPaValue * 0.02953f;
     }
 
+    public static Float kilometersToMiles(Float kilometerValue) { return kilometerValue * 0.62137119f; }
+
     // ======== OTHERS =============
 
     public static Float round(Float number) {
