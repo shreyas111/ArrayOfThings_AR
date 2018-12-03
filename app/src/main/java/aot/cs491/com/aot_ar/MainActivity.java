@@ -159,6 +159,9 @@ public class MainActivity extends AppCompatActivity
                                 () -> {
                                     Log.i(TAG, "Finished fetching nearby nodes");
                                     everythingIsDone.set(true);
+                                    if(nodes.isEmpty()) {
+                                        handleCompleteableFutures();
+                                    }
                                 }
                         )
         );
@@ -214,8 +217,8 @@ public class MainActivity extends AppCompatActivity
                             }
                             else
                             {
-                                longitude = -87.662111;
-                                latitude = 41.871629;
+                                longitude = -87.647887;
+                                latitude = 41.8698527;
                             }
                             initializeAndCallAPI();
                         }
