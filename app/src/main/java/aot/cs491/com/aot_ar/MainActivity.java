@@ -31,13 +31,11 @@ import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.UnavailableException;
 import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.Node;
-import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
-import com.jjoe64.graphview.series.Series;
 import com.shawnlin.numberpicker.NumberPicker;
 
 import java.util.ArrayList;
@@ -1039,7 +1037,7 @@ public class MainActivity extends AppCompatActivity
         }
         if(menuOptionSelected=="light") {
             value1l.setBackgroundResource(0);
-            value1l.setText("LIGHT");
+            value1l.setText("Light");
             value3l.setBackgroundResource(0);
             value3l.setText("IR");
             value4l.setBackgroundResource(0);
