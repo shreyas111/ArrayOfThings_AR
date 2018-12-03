@@ -389,7 +389,13 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
+        for(int i=0; i<nodes.size();i++)
+        {
+            View eView = exampleLayoutRenderables.get(i).getView();
+            View vgraph= eView.findViewById(R.id.graph_layout_id);
+            vgraph.setVisibility(LinearLayout.GONE);
+            eView.findViewById(R.id.aggregate_layout_id).setVisibility(LinearLayout.GONE);
+        }
         if (id == R.id.nav_light) {
             menuOptionSelected="light";
             if(markersAdded)
@@ -478,6 +484,11 @@ public class MainActivity extends AppCompatActivity
                 TextView med =l.findViewById(R.id.textViewMedVal);
                 TextView max =l.findViewById(R.id.textViewMaxVal);
                 TextView units =l.findViewById(R.id.textViewArrgegateUnits);
+                min.setText("No Data");
+                med.setText("No Data");
+                max.setText("No Data");
+                units.setText("");
+
                 AOTSensorType sensorType=AOTSensorType.TEMPERATURE;
                 if(menuOptionSelected=="weather") {
                      sensorType = AOTSensorType.TEMPERATURE;
@@ -572,6 +583,10 @@ public class MainActivity extends AppCompatActivity
                 TextView med =l.findViewById(R.id.textViewMedVal);
                 TextView max =l.findViewById(R.id.textViewMaxVal);
                 TextView units =l.findViewById(R.id.textViewArrgegateUnits);
+                min.setText("No Data");
+                med.setText("No Data");
+                max.setText("No Data");
+                units.setText("");
 
                 AOTSensorType sensorType=AOTSensorType.PRESSURE;
                 if(menuOptionSelected=="weather") {
@@ -670,6 +685,11 @@ public class MainActivity extends AppCompatActivity
                 TextView med =l.findViewById(R.id.textViewMedVal);
                 TextView max =l.findViewById(R.id.textViewMaxVal);
                 TextView units =l.findViewById(R.id.textViewArrgegateUnits);
+
+                min.setText("No Data");
+                med.setText("No Data");
+                max.setText("No Data");
+                units.setText("");
 
                 AOTSensorType sensorType=AOTSensorType.HUMIDITY;
                 if(menuOptionSelected=="weather") {

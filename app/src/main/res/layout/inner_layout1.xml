@@ -81,14 +81,14 @@
                 <TextView
                     android:id="@+id/textView_tempu"
                     style="@style/TextShadow"
-                    android:layout_width="40dp"
+                    android:layout_width="45dp"
                     android:layout_height="20dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="8dp"
                     android:gravity="center"
                     android:text="abc"
-                    android:textSize="12sp"></TextView>
+                    android:textSize="11sp"></TextView>
 
             </LinearLayout>
             <LinearLayout
@@ -131,14 +131,14 @@
                 <TextView
                     android:id="@+id/textView_presu"
                     style="@style/TextShadow"
-                    android:layout_width="40dp"
+                    android:layout_width="45dp"
                     android:layout_height="20dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="8dp"
                     android:gravity="center"
                     android:text="abc"
-                    android:textSize="12sp"></TextView>
+                    android:textSize="11sp"></TextView>
 
             </LinearLayout>
             <LinearLayout
@@ -162,7 +162,7 @@
                     android:backgroundTintMode="src_atop"
                     android:text="HUM"
                     android:textColor="@color/colorAccentDark"
-                    android:textSize="10sp" />
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/textView_hum"
@@ -181,14 +181,14 @@
                 <TextView
                     android:id="@+id/textView_humu"
                     style="@style/TextShadow"
-                    android:layout_width="40dp"
+                    android:layout_width="45dp"
                     android:layout_height="20dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="8dp"
                     android:gravity="center"
-                    android:text="abc"
-                    android:textSize="12sp"></TextView>
+                    android:text="abc/cm2"
+                    android:textSize="11sp"></TextView>
             </LinearLayout>
         </LinearLayout>
 </LinearLayout>
