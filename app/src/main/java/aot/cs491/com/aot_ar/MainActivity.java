@@ -417,6 +417,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+
         closeComparisonLayout();
         if(markersAdded) {
             for (int i = 0; i < nodes.size(); i++) {
@@ -1018,9 +1019,9 @@ public class MainActivity extends AppCompatActivity
                     .setSystemUiVisibility(
                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                    // View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                                     | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                    //| View.SYSTEM_UI_FLAG_FULLSCREEN
+                                    | View.SYSTEM_UI_FLAG_FULLSCREEN
                                     | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
@@ -1343,6 +1344,7 @@ public class MainActivity extends AppCompatActivity
             ViewGroup contentLay = (ViewGroup) progressViewSnackbar.getView().findViewById(com.google.android.material.R.id.snackbar_text).getParent();
             ProgressBar item = new ProgressBar(contentLay.getContext());
             contentLay.addView(item,0);
+
         }
         else {
             progressViewSnackbar.setText(message);
