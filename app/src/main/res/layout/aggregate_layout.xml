@@ -21,9 +21,9 @@
             android:gravity="center"
             android:layout_gravity="center"
             android:layout_marginTop="2dp"
-            android:text="DAILY"
+            android:text="SELECTED DAY"
             android:textColor="@color/colorAccentDark"
-            android:textSize="10sp" />
+            android:textSize="12sp" />
 
     </LinearLayout>
     <LinearLayout
@@ -36,7 +36,6 @@
             android:id="@+id/textViewMin"
             style="@style/TextShadow"
             android:layout_width="40dp"
-
             android:layout_height="15dp"
             android:gravity="center"
             android:layout_marginTop="2dp"
@@ -50,7 +49,6 @@
             android:id="@+id/textViewMed"
             style="@style/TextShadow"
             android:layout_width="40dp"
-
             android:layout_height="15dp"
             android:gravity="center"
             android:layout_marginTop="2dp"
@@ -59,11 +57,11 @@
             android:text="MED"
             android:textColor="@color/colorAccentDark"
             android:textSize="12sp" />
+
         <TextView
             android:id="@+id/textViewMax"
             style="@style/TextShadow"
             android:layout_width="40dp"
-
             android:layout_height="15dp"
             android:gravity="center"
             android:layout_marginTop="2dp"
@@ -72,7 +70,6 @@
             android:text="MAX"
             android:textColor="@color/colorAccentDark"
             android:textSize="12sp" />
-
     </LinearLayout>
 
     <LinearLayout
@@ -136,10 +133,11 @@
             android:layout_height="15dp"
             android:gravity="center"
             android:layout_gravity="center"
-            android:layout_marginTop="2dp"
-            android:text="Units"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="5dp"
+            android:text="UNITS"
             android:textColor="@color/colorAccentDark"
-            android:textSize="10sp" />
+            android:textSize="12sp" />
 
     </LinearLayout>
 
