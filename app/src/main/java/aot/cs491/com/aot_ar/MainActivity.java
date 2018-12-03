@@ -1237,7 +1237,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void vibrate() {
-        vibrate(10);
+        vibrate(20);
     }
     private void vibrate(int durationInMillis) {
         Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
