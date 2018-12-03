@@ -79,6 +79,7 @@ public class DemoUtils {
             Config config = new Config(session);
             //Added by us.
             config.setPlaneFindingMode(Config.PlaneFindingMode.DISABLED);
+            config.setFocusMode(Config.FocusMode.AUTO);
 
             config.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE);
             session.configure(config);

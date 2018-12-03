@@ -169,6 +169,7 @@ public class MainActivity extends AppCompatActivity
                 Observable.fromIterable(filterCalls)
                         .flatMap(listSingle -> listSingle)
                         .flatMap(aotObservations -> AOTService.aggregateObservations(aotObservations, "avg").toObservable())
+                        .doOnSubscribe(disposable -> node.getAggregatedObservations().clear())
                         .subscribe(aotObservation -> {
                                     if(aotObservation.getSensorPath() != null) {
                                         node.getAggregatedObservations().put(aotObservation.getSensorType(), aotObservation);
