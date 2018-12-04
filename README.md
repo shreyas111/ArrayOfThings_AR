@@ -1,5 +1,7 @@
 # ArrayOfThings_AR
-The [Array of Things](https://arrayofthings.github.io/) is a collaborative effort among leading scientists, universities, local government, and communities to collect real-time data on urban environment, infrastructure, and activity for research and public use. Our project attempts to visualize some of this data in Augmented Reality.
+The [Array of Things](https://arrayofthings.github.io/) is a collaborative effort among leading scientists, universities, local government, and communities to collect real-time data on urban environment, infrastructure and activity via various AoT Sensor nodes installed in multiple urban locations for the purpose of research and public use.
+
+For our project, we have developed an AR application (ARray of Things) to visualize realtime AOT sensor data. Our application is a native Android application which makes the use of AR core to visualize the AR components. The application augments the geolocation of AOT sensor nodes which lie within a certain distance of the users GPS location with an augmented model of different sensor data. The user has the option to change the day and hour of the day to view AoT node sensor data at that point of the day. The user also has an option to select the category to view data relating to a particular category. The augmented models allow the user to compare data of an augmented node with data of different AoT nodes at different days and time.
 
 ## Website
 [Project Website](https://mrasto3.people.uic.edu/cs491/projects/03) 
