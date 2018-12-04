@@ -501,7 +501,7 @@ public class MainActivity extends AppCompatActivity
         nodeName.setText(location.getText().toString());
         compDate.setText(Utils.dateToString(filterStartDate,"MMM d, ''yy\nh a", TimeZone.getDefault()));
         if(menuOptionSelected=="weather") {
-            lbl1.setText("TEMPRATURE");
+            lbl1.setText("TEMPERATURE");
             TextView value1=eView.findViewById(R.id.textView_temp);
             val1.setText(value1.getText().toString());
             TextView un1=eView.findViewById(R.id.textView_tempu);
